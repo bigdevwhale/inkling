@@ -6,6 +6,15 @@ line "<!-- tg", then 2-4 short lines in Russian for users (what is new, what is 
 then close it like any HTML comment. The release notes carry it, and the chat bot posts those lines.
 -->
 
+## [1.0.1] - 2026-11-12
+
+- Fixed: answering «were you at the lesson?» with «yes» crashed the app (#1). The «what was set?» sheet and the evening satchel no longer open inside the scrolling home screen.
+
+<!-- tg
+Исправлен вылет приложения, когда отвечаешь «Был(а)» на вопрос «Были на уроке?».
+Спасибо, что сообщили!
+-->
+
 ## [1.0.0] - 2026-11-12
 
 The first release of Inkling.

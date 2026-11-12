@@ -71,6 +71,7 @@ import app.inkling.ui.theme.T
 fun HomeScreen(d: Data, nav: Nav) {
     val s = d.s
     var quests by remember { mutableStateOf(false) }
+    var after by remember { mutableStateOf<Slot?>(null) }   // the class just marked «was there»: «what was set?» opens for it
     val todayMin = d.studies.filter { it.day == d.today }.sumOf { it.minutes }
     val lastDay = d.studies.maxOfOrNull { it.day } ?: d.today
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 18.dp)) {
@@ -115,7 +116,7 @@ fun HomeScreen(d: Data, nav: Nav) {
             Icon(Icons.NEXT, C.accInk, 20.dp)
         }
 
-        Waiting(d, nav)
+        Waiting(d, nav) { after = it }
 
         val qs = s.quests.mapNotNull { Quests.byId[it] }
         if (qs.isNotEmpty()) {
@@ -145,6 +146,9 @@ fun HomeScreen(d: Data, nav: Nav) {
         Spacer(Modifier.height(24.dp))
     }
 
+    // the sheets fill the screen, so they live outside the scrolling column (inside it they get an endless height and crash)
+    after?.let { sl -> AfterClassSheet(sl, d, nav) { after = null } }
+    if (satchel) SatchelSheet(d) { satchel = false }
     if (quests) Sheet({ quests = false }) {
         Text(tr("Задания недели", "This week's quests"), style = T.h2)
         Text(tr("Новые – каждый понедельник. За них дают ману.", "New ones every Monday. They bring mana."), style = T.small, modifier = Modifier.padding(top = 4.dp, bottom = 8.dp))
@@ -191,7 +195,7 @@ private fun NowLine(d: Data, nav: Nav) {
 
 /** At most one card asks for attention: a class to mark, the sphinx, the satchel, a deadline, a trial. */
 @Composable
-private fun Waiting(d: Data, nav: Nav) {
+private fun Waiting(d: Data, nav: Nav, onWas: (Slot) -> Unit) {
     val c = LocalContext.current.container
     val s = d.s
     val min = nowMin()
@@ -199,7 +203,6 @@ private fun Waiting(d: Data, nav: Nav) {
     val tomorrow = Timetable.on(s, d.slots, d.today + 1)
     val soonTask = d.openTasks.firstOrNull { it.due in d.today..(d.today + 2) }
     val soonExam = d.upcoming.firstOrNull { it.day - d.today <= 14 }
-    var after by remember { mutableStateOf<Slot?>(null) }
     when {
         unmarked.isNotEmpty() -> { val sl = unmarked.last(); val sub = d.subById[sl.subjectId]
             Column(Modifier.padding(top = 10.dp).fillMaxWidth().card(18.dp).padding(12.dp)) {
@@ -215,7 +218,7 @@ private fun Waiting(d: Data, nav: Nav) {
                     listOf(Attend.WAS to tr("Был(а)", "Yes"), Attend.MISSED to tr("Пропуск", "Missed"), Attend.CANCELLED to tr("Отменили", "Cancelled")).forEach { (st, l) ->
                         val col = when (st) { Attend.WAS -> C.ok; Attend.MISSED -> C.bad; else -> C.mute }
                         Box(Modifier.weight(1f).clip(RoundedCornerShape(14.dp)).background(col.copy(alpha = .15f)).clickable {
-                            c.write { attend(sl, d.today, st) }; if (st == Attend.WAS && s.afterClass) after = sl
+                            c.write { attend(sl, d.today, st) }; if (st == Attend.WAS && s.afterClass) onWas(sl)
                         }.padding(vertical = 11.dp), contentAlignment = Alignment.Center) { Text(l, style = T.bodyB.copy(color = col)) }
                     }
                 }
@@ -230,8 +233,6 @@ private fun Waiting(d: Data, nav: Nav) {
         soonExam != null -> Card1("phoenix", "${Words.examKind(soonExam.kind)}: ${soonExam.title.ifBlank { d.subById[soonExam.subjectId]?.name.orEmpty() }}",
             inDays(soonExam.day - d.today).let { it.replaceFirstChar { ch -> ch.uppercase() } } + d.tickets.filter { it.examId == soonExam.id }.let { t -> if (t.isEmpty()) "" else tr(" · выучено ${t.count { it.level >= 2 }} из ${t.size}", " · ${t.count { it.level >= 2 }} of ${t.size} learned") }) { nav.push(Screen.ExamInfo(soonExam.id)) }
     }
-    after?.let { sl -> AfterClassSheet(sl, d, nav) { after = null } }
-    if (satchel) SatchelSheet(d) { satchel = false }
 }
 
 private var satchel by mutableStateOf(false)
