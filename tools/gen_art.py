@@ -124,6 +124,18 @@ Objects in order (left to right, top to bottom):
 5 a quill pen in an ink pot, 6 an open old spellbook with glowing runes (no letters), 7 a rolled parchment scroll tied with a red ribbon and a red wax seal, 8 a leather school satchel,
 9 a sealed envelope with a red wax seal, 10 a golden star, 11 a glowing light-blue crystal orb, 12 a speckled magic egg in a nest of straw,
 13 a wooden magic wand with a carved handle, 14 a small brass bell, 15 a small stack of three closed books, 16 a golden laurel medal.""",
+    "academy": """Use your image generation tool to create ONE image. Do nothing else (no file copying).
+
+Image: a wide banner scene for a cozy study app: the inner courtyard of an old academy of magic at dusk, seen from the front, side-on like a 2D game background.
+""" + STYLE + """ Wide panorama, aspect ratio 3:1.
+Tall stone towers with pointed roofs and warm lit windows on both sides, a big arched gate to a great hall in the middle, a wooden notice board with pinned parchment notes (no readable text) on the left, a few lanterns, an old tree, cobblestones, first stars in a deep indigo sky.
+No people, no creatures, no letters or text anywhere.""",
+    "chronicle": """Use your image generation tool to create ONE image. Do nothing else (no file copying).
+
+Image: a wide banner scene for a cozy study app: a quiet scriptorium archive in a tower of an academy of magic, seen from the front, side-on like a 2D game background.
+""" + STYLE + """ Wide panorama, aspect ratio 3:1.
+In the middle a huge open chronicle book on a carved wooden lectern, glowing softly; tall shelves of scrolls and bound volumes on both sides, a brass astrolabe, candles, hanging star charts, a round window with night sky.
+No people, no creatures, no letters or text anywhere (pages show only faint scribbles and small drawings).""",
 }
 
 

@@ -69,7 +69,9 @@ import app.inkling.ui.components.Line
 import app.inkling.ui.components.Meter
 import app.inkling.ui.components.Page
 import app.inkling.ui.components.Row2
-import app.inkling.ui.components.Section
+import app.inkling.ui.components.Ornate
+import app.inkling.ui.components.parchment
+import app.inkling.ui.components.SceneHeader
 import app.inkling.ui.components.Sheet
 import app.inkling.ui.components.SubjectPicker
 import app.inkling.ui.components.card
@@ -141,14 +143,14 @@ fun MaterialPage(scr: Screen.MaterialInfo, d: Data, nav: Nav) {
         m.forecast(d.studies, d.today)?.let { Text(tr("В нынешнем темпе закончите ${fmtDay(it)}", "At this pace you'll finish on ${fmtDay(it)}"), style = T.bodyB.copy(color = C.acc), modifier = Modifier.padding(top = 8.dp)) }
         if (m.finished > 0) Text(tr("Закончено ${fmtDay(m.finished)} – корешок стоит на полке в башне", "Finished on ${fmtDay(m.finished)} – its spine stands on the tower shelf"), style = T.bodyB.copy(color = C.ok), modifier = Modifier.padding(top = 8.dp))
         else {
-            Section(tr("Отметить, сколько прошли", "Mark how far you got"))
+            Ornate(tr("Отметить, сколько прошли", "Mark how far you got"))
             Row(verticalAlignment = Alignment.CenterVertically) { Stepper(add, if (m.unit == Material.PAGES) 5 else 1) { add = it.coerceAtLeast(1) }; Spacer(Modifier.weight(1f))
                 Btn("+$add", small = true) { c.write { addUnits(m.id, add) } } }
             Spacer(Modifier.height(10.dp))
             Btn(tr("Зажечь свечу над ним", "Light a candle for it"), Modifier.fillMaxWidth()) { nav.push(Screen.Candle) }
         }
         val mine = d.studies.filter { it.materialId == m.id }
-        if (mine.isNotEmpty()) { Section(tr("Занятия · ${dur(mine.sumOf { it.minutes } * 60)}", "Sessions · ${dur(mine.sumOf { it.minutes } * 60)}"))
+        if (mine.isNotEmpty()) { Ornate(tr("Занятия · ${dur(mine.sumOf { it.minutes } * 60)}", "Sessions · ${dur(mine.sumOf { it.minutes } * 60)}"))
             mine.take(5).forEach { st -> Row2(relDay(st.day, d.today), st.note.takeIf { it.isNotBlank() }, "${dur(st.minutes * 60)}${if (st.units > 0) " · +${st.units}" else ""}") { nav.push(Screen.StudyEdit(st.id)) } } }
         Spacer(Modifier.height(24.dp))
     }
@@ -224,7 +226,7 @@ fun TaskPage(scr: Screen.TaskInfo, d: Data, nav: Nav) {
                 runCatching { ctx.startActivity(Intent(Intent.ACTION_VIEW).setDataAndType(Uri.parse(t.photo), "image/*").addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)) } }, contentScale = ContentScale.Crop)
         }
         if (t.stageList.isNotEmpty()) {
-            Section(tr("Этапы", "Stages"))
+            Ornate(tr("Этапы", "Stages"))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Mini(if (t.state >= 3) "dragon" else "dragon", 54.dp, egg = t.state < 3); Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) { Meter(t.stage.toFloat() / t.stageList.size, color = C.gold); Text(tr("${t.stage} из ${t.stageList.size}", "${t.stage} of ${t.stageList.size}"), style = T.tiny, modifier = Modifier.padding(top = 4.dp)) }
@@ -235,7 +237,7 @@ fun TaskPage(scr: Screen.TaskInfo, d: Data, nav: Nav) {
                     Spacer(Modifier.width(10.dp)); Text(st, style = if (done) T.body.copy(color = C.mute) else T.body) }
             }
         } else {
-            Section(tr("Где сейчас", "Where it is"))
+            Ornate(tr("Где сейчас", "Where it is"))
             val states = when (t.kind) { Task.LAB -> listOf(tr("не начата", "to do"), tr("сделана", "done"), tr("сдана", "handed in"), tr("защищена", "defended"))
                 Task.ESSAY, Task.PROJECT -> listOf(tr("в работе", "to do"), tr("готово", "done"), tr("сдано", "handed in")); else -> listOf(tr("не сделано", "to do"), tr("сделано", "done")) }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) { states.forEachIndexed { i, l -> Chip(l, t.state == i, Modifier.weight(1f), color = if (i == 0) C.acc else C.ok) { c.write { setTaskState(t, i) } } } }
@@ -308,7 +310,7 @@ fun ExamPage(scr: Screen.ExamInfo, d: Data, nav: Nav) {
         else Text(tr("Результат: ", "Result: ") + (if (state || e.maxScore > 0) fmt1(e.score) else Marks.show(d.s.scale, e.score)), style = T.h2.copy(color = C.ok), modifier = Modifier.padding(top = 10.dp))
         if (tk.isNotEmpty()) {
             val known = tk.count { it.level >= 2 }; val left = tk.count { it.level < 2 }; val days = (e.day - d.today).coerceAtLeast(1)
-            Section(if (state) tr("Задания КИМ", "Tasks of the paper") else tr("Билеты", "Tickets"))
+            Ornate(if (state) tr("Задания КИМ", "Tasks of the paper") else tr("Билеты", "Tickets"))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(2.dp)) { tk.forEach { t -> Box(Modifier.weight(1f).height(10.dp).clip(RoundedCornerShape(50)).background(levelColor(t.level).copy(alpha = if (t.level == 0) .3f else 1f))) } }
             Text(tr("Выучено $known из ${tk.size}", "$known of ${tk.size} learned") + if (!e.done && left > 0) tr(" · в день нужно ${(left + days - 1) / days}", " · ${(left + days - 1) / days} a day needed") else "", style = T.bodyB, modifier = Modifier.padding(top = 6.dp))
             if (!e.done) Btn(tr("Сфинкс тянет билет", "The sphinx draws a ticket"), Modifier.fillMaxWidth().padding(top = 10.dp)) { draw = tk.filter { it.level < 3 }.ifEmpty { tk }.minByOrNull { it.level * 1000 + (it.asked % 997).toInt() + (Math.random() * 400).toInt() } }
@@ -320,7 +322,7 @@ fun ExamPage(scr: Screen.ExamInfo, d: Data, nav: Nav) {
         // practice papers and the predicted score
         if (state || e.maxScore > 0) {
             val papers = d.grades.filter { it.examId == e.id }.sortedBy { it.day }
-            Section(tr("Пробные варианты", "Practice papers"), action = tr("Добавить", "Add")) { paper = true }
+            Ornate(tr("Пробные варианты", "Practice papers"), action = tr("Добавить", "Add")) { paper = true }
             if (papers.isEmpty()) Empty(tr("Решили вариант – запишите балл, и появится прогноз.", "Did a practice paper? Write the score and a forecast appears."))
             else {
                 val last = papers.takeLast(3).map { it.value }; val pred = last.average()
@@ -371,7 +373,7 @@ fun GradesPage(d: Data, nav: Nav) {
     var add by remember { mutableStateOf(false) }
     val term = Timetable.term(d.s, d.today)
     Page(if (d.s.school) tr("Оценки", "Marks") else tr("Зачётка", "Record book"), nav::pop, action = { Box(Modifier.size(40.dp).clip(CircleShape).clickable { add = true }, contentAlignment = Alignment.Center) { Icon(Icons.PLUS, C.ink, 22.dp) } }) {
-        Section(if (term != null) tr("${Words.term(d.s).replaceFirstChar { it.uppercase() }} до ${fmtDayShort(term.last)}", "This ${Words.term(d.s)}, until ${fmtDayShort(term.last)}") else tr("Предметы", "Subjects"))
+        Ornate(if (term != null) tr("${Words.term(d.s).replaceFirstChar { it.uppercase() }} до ${fmtDayShort(term.last)}", "This ${Words.term(d.s)}, until ${fmtDayShort(term.last)}") else tr("Предметы", "Subjects"))
         d.active.forEach { s ->
             val gs = d.grades.filter { it.subjectId == s.id && it.examId == 0L && (term == null || it.day in term) }
             if (gs.isEmpty()) return@forEach
@@ -389,7 +391,7 @@ fun GradesPage(d: Data, nav: Nav) {
         // the record book: trials passed
         val passed = d.exams.filter { it.done && it.score >= 0 && it.kind !in setOf(Exam.TEST, Exam.VPR) }.sortedByDescending { it.day }
         if (passed.isNotEmpty()) {
-            Section(if (d.s.school) tr("Испытания", "Trials") else tr("Зачётка", "Record book"))
+            Ornate(if (d.s.school) tr("Испытания", "Trials") else tr("Зачётка", "Record book"))
             Marks.gpa(d.s.scale, d.exams) { id -> d.subById[id]?.credits ?: 0.0 }?.let { g ->
                 Row(verticalAlignment = Alignment.CenterVertically) { Text(fmt1(g), style = T.big.copy(color = C.acc)); Spacer(Modifier.width(10.dp))
                     Text(if (d.subjects.any { it.credits > 0 }) tr("средний балл с весом кредитов", "average weighted by credits") else tr("средний балл экзаменов", "exam average"), style = T.small) } }

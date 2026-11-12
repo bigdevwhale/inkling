@@ -128,8 +128,8 @@ fun Meter(v: Float, modifier: Modifier = Modifier, color: Color = C.acc, h: Dp =
 
 /** A number with a caption, for grids of facts. */
 @Composable
-fun Tile(value: String, label: String, modifier: Modifier = Modifier, delta: String? = null, good: Boolean = true, icon: Icons? = null, tint: Color = C.acc) {
-    Column(modifier.card(16.dp).padding(horizontal = 14.dp, vertical = 12.dp)) {
+fun Tile(value: String, label: String, modifier: Modifier = Modifier, delta: String? = null, good: Boolean = true, icon: Icons? = null, tint: Color = C.acc, parch: Boolean = false) {
+    Column((if (parch) modifier.parchment(16.dp) else modifier.card(16.dp)).padding(horizontal = 14.dp, vertical = 12.dp)) {
         if (icon != null) Box(Modifier.padding(bottom = 6.dp).size(30.dp).clip(CircleShape).background(tint.copy(alpha = .13f)), contentAlignment = Alignment.Center) { Icon(icon, tint, 17.dp) }
         Text(value, style = T.num, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Text(label, style = T.small, maxLines = 2)
@@ -138,11 +138,11 @@ fun Tile(value: String, label: String, modifier: Modifier = Modifier, delta: Str
 }
 
 @Composable
-fun TileGrid(items: List<Triple<String, String, String?>>, cols: Int = 2, icons: List<Pair<Icons, Color>> = emptyList()) {
+fun TileGrid(items: List<Triple<String, String, String?>>, cols: Int = 2, icons: List<Pair<Icons, Color>> = emptyList(), parch: Boolean = false) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         items.chunked(cols).forEachIndexed { r, row ->
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                row.forEachIndexed { k, (v, l, d) -> val ic = icons.getOrNull(r * cols + k); Tile(v, l, Modifier.weight(1f), d, d?.startsWith("−") != true, ic?.first, ic?.second ?: C.acc) }
+                row.forEachIndexed { k, (v, l, d) -> val ic = icons.getOrNull(r * cols + k); Tile(v, l, Modifier.weight(1f), d, d?.startsWith("−") != true, ic?.first, ic?.second ?: C.acc, parch) }
                 repeat(cols - row.size) { Spacer(Modifier.weight(1f)) }
             }
         }

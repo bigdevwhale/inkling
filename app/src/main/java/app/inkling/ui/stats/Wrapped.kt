@@ -41,6 +41,9 @@ import app.inkling.ui.components.SchoolMark
 import app.inkling.ui.share.CardKind
 import app.inkling.ui.share.ShareReq
 import app.inkling.ui.theme.C
+import app.inkling.ui.components.Ornate
+import app.inkling.ui.components.parchment
+import app.inkling.ui.components.SceneHeader
 import app.inkling.ui.theme.T
 import java.time.LocalDate
 

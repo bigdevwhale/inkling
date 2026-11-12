@@ -128,6 +128,12 @@ def main():
         for name, fr in zip(PETS, frames(SHEETS / "eggs.png", 6, 4)):
             save(fr, f"egg_{name}")
         print("eggs")
+    for b in ("academy", "chronicle"):
+        if (SHEETS / f"{b}.png").exists():
+            g = Image.open(SHEETS / f"{b}.png").convert("RGB")
+            g = g.resize((1200, round(1200 * g.height / g.width)), Image.LANCZOS)
+            g.save(OUT / f"banner_{b}.webp", "WEBP", quality=86, method=6)
+            print("banner", b)
     if (SHEETS / "tower.png").exists():
         g = key(Image.open(SHEETS / "tower.png"), flood=False)
         g = g.resize((1152, round(1152 * g.height / g.width)), Image.LANCZOS)

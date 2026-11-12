@@ -71,7 +71,9 @@ import app.inkling.ui.components.Meter
 import app.inkling.ui.components.Page
 import app.inkling.ui.components.Row2
 import app.inkling.ui.components.SchoolMark
-import app.inkling.ui.components.Section
+import app.inkling.ui.components.Ornate
+import app.inkling.ui.components.parchment
+import app.inkling.ui.components.SceneHeader
 import app.inkling.ui.components.Segments
 import app.inkling.ui.components.Sheet
 import app.inkling.ui.components.SubjectPicker
@@ -92,8 +94,9 @@ fun AcademyScreen(d: Data, nav: Nav) {
     var sel by rememberSaveable { mutableIntStateOf(0) }
     val which = if (d.s.self) sel + 1 else sel
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 18.dp)) {
-        Text(if (d.s.self) tr("Учёба", "Study") else tr("Академия", "Academy"), style = T.title, modifier = Modifier.padding(top = 10.dp))
-        Text(Words.year(d.s) + (Timetable.term(d.s, d.today)?.let { " · ${Words.term(d.s)} ${tr("до", "until")} ${fmtDayShort(it.last)}" } ?: ""), style = T.small)
+        SceneHeader("banner_academy", if (d.s.self) tr("Учёба", "Study") else tr("Академия", "Academy"),
+            Words.year(d.s) + (Timetable.term(d.s, d.today)?.let { " · ${Words.term(d.s)} ${tr("до", "until")} ${fmtDayShort(it.last)}" } ?: if (d.s.terms.isNotEmpty()) " · " + tr("каникулы", "holidays") else ""),
+            Modifier.padding(top = 10.dp))
         Segments(tabs, sel, Modifier.padding(top = 12.dp, bottom = 6.dp)) { sel = it }
         when (which) {
             0 -> WeekTab(d, nav)
@@ -140,7 +143,7 @@ private fun WeekTab(d: Data, nav: Nav) {
         val sub = d.subById[sl.subjectId]
         val att = d.attends.firstOrNull { it.slotId == sl.id && it.day == day }
         val live = day == d.today && nowMin in sl.start until sl.end
-        Row(Modifier.fillMaxWidth().padding(vertical = 4.dp).card(16.dp, if (live) C.accSoft else null).clickable { if (sub != null) nav.push(Screen.SubjectInfo(sub.id)) }.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.fillMaxWidth().padding(vertical = 4.dp).then(if (live) Modifier.card(16.dp, C.accSoft) else Modifier.parchment(16.dp)).clickable { if (sub != null) nav.push(Screen.SubjectInfo(sub.id)) }.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.width(50.dp)) { Text(hm(sl.start), style = T.smallB); Text(hm(sl.end), style = T.tiny) }
             Box(Modifier.size(4.dp, 36.dp).clip(RoundedCornerShape(50)).background(subjectColor(sub)))
             Spacer(Modifier.width(10.dp))
@@ -164,7 +167,7 @@ private fun WeekTab(d: Data, nav: Nav) {
     val term = Timetable.term(d.s, d.today) ?: (d.today - 30)..d.today
     val duty = Duty(d.tasks, d.attends, Span(term.first, term.last, ""), d.today)
     duty.attendance?.let { a ->
-        Section(tr("Посещаемость за ${Words.term(d.s)}", "Attendance this ${Words.term(d.s)}"))
+        Ornate(tr("Посещаемость за ${Words.term(d.s)}", "Attendance this ${Words.term(d.s)}"))
         Row(verticalAlignment = Alignment.CenterVertically) { Text("${(a * 100).toInt()}%", style = T.num); Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f)) { Meter(a, color = if (a >= .9f) C.ok else if (a >= .7f) C.gold else C.bad); Text(tr("был(а) ${duty.was} · пропусков ${duty.missed}", "${duty.was} attended · ${duty.missed} missed"), style = T.tiny, modifier = Modifier.padding(top = 4.dp)) } }
     }
@@ -181,7 +184,7 @@ private fun TasksTab(d: Data, nav: Nav) {
         Btn(tr("Задание", "Task"), Modifier.weight(1f), small = true) { nav.push(Screen.TaskInfo(0)) }
         if (!d.s.school) Ghost(if (d.s.self) tr("Проект", "Project") else tr("Курсовая, диплом", "Coursework, thesis"), Modifier.weight(1f), small = true) { nav.push(Screen.TaskInfo(0, kind = if (d.s.self) Task.PROJECT else Task.COURSEWORK)) }
     }
-    if (big.isNotEmpty()) { Section(tr("Великое делание", "The great work"))
+    if (big.isNotEmpty()) { Ornate(tr("Великое делание", "The great work"))
         big.forEach { t -> BigRow(t, d) { nav.push(Screen.TaskInfo(t.id)) } } }
     val small = open.filter { !it.big }
     val groups = listOf(
@@ -192,16 +195,16 @@ private fun TasksTab(d: Data, nav: Nav) {
         tr("Без срока", "No date") to small.filter { it.due == 0L },
     )
     if (small.isEmpty() && big.isEmpty()) Empty(tr("Всё сделано. Сова отдыхает.", "All done. The owl is resting."))
-    groups.forEach { (title, l) -> if (l.isNotEmpty()) { Section(title); l.forEach { t -> TaskRow(t, d, { nav.push(Screen.TaskInfo(t.id)) }) { c.write { setTaskState(t, (t.state + 1).coerceAtMost(t.last)) } } } } }
+    groups.forEach { (title, l) -> if (l.isNotEmpty()) { Ornate(title); l.forEach { t -> TaskRow(t, d, { nav.push(Screen.TaskInfo(t.id)) }) { c.write { setTaskState(t, (t.state + 1).coerceAtMost(t.last)) } } } } }
     val done = d.tasks.filter { !it.open }.sortedByDescending { it.doneDay }.take(8)
-    if (done.isNotEmpty()) { Section(tr("Недавно сделано", "Recently done"))
+    if (done.isNotEmpty()) { Ornate(tr("Недавно сделано", "Recently done"))
         done.forEach { t -> TaskRow(t, d, { nav.push(Screen.TaskInfo(t.id)) }) { c.write { setTaskState(t, 0) } } } }
 }
 
 @Composable
 fun TaskRow(t: Task, d: Data, onOpen: () -> Unit, onTick: () -> Unit) {
     val sub = d.subById[t.subjectId]
-    Row(Modifier.fillMaxWidth().padding(vertical = 3.dp).clip(RoundedCornerShape(14.dp)).background(C.card).clickable(onClick = onOpen).padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().padding(vertical = 3.dp).parchment(14.dp).clickable(onClick = onOpen).padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
         val doneAll = !t.open
         Box(Modifier.size(28.dp).clip(CircleShape).background(if (doneAll) C.ok else if (t.state > 0) C.okSoft else C.card2).clickable(onClick = onTick), contentAlignment = Alignment.Center) {
             if (doneAll) Icon(Icons.CHECK, C.accInk, 16.dp) else if (t.state > 0) Text("${t.state}", style = T.smallB.copy(color = C.ok)) }
@@ -219,7 +222,7 @@ fun TaskRow(t: Task, d: Data, onOpen: () -> Unit, onTick: () -> Unit) {
 @Composable
 private fun BigRow(t: Task, d: Data, onClick: () -> Unit) {
     val n = t.stageList.size.coerceAtLeast(1)
-    Column(Modifier.fillMaxWidth().padding(vertical = 4.dp).card(18.dp).clickable(onClick = onClick).padding(12.dp)) {
+    Column(Modifier.fillMaxWidth().padding(vertical = 4.dp).parchment(18.dp).clickable(onClick = onClick).padding(12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Prop("egg", 40.dp); Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f)) {
@@ -239,10 +242,10 @@ private fun TrialsTab(d: Data, nav: Nav) {
     Btn(tr("Новое испытание", "New trial"), Modifier.fillMaxWidth().padding(top = 8.dp), small = true) { nav.push(Screen.ExamInfo(0)) }
     if (d.upcoming.isEmpty()) Empty(if (d.s.school) tr("Контрольные, ВПР, ОГЭ и ЕГЭ – с отсчётом дней и билетами.", "Tests and state exams – with a countdown and tickets.")
         else tr("Экзамены и зачёты сессии – с отсчётом дней и билетами.", "The exams and credits of the session – with a countdown and tickets."))
-    else Section(tr("Впереди", "Ahead"))
+    else Ornate(tr("Впереди", "Ahead"))
     d.upcoming.forEach { e -> ExamRow(e, d) { nav.push(Screen.ExamInfo(e.id)) } }
     val past = d.exams.filter { it.done || it.day < d.today }.sortedByDescending { it.day }
-    if (past.isNotEmpty()) { Section(tr("Позади", "Behind")); past.forEach { e -> ExamRow(e, d) { nav.push(Screen.ExamInfo(e.id)) } } }
+    if (past.isNotEmpty()) { Ornate(tr("Позади", "Behind")); past.forEach { e -> ExamRow(e, d) { nav.push(Screen.ExamInfo(e.id)) } } }
     if (!d.s.self) { Spacer(Modifier.height(10.dp)); Ghost(if (d.s.school) tr("Оценки и четверть", "Marks and the term") else tr("Зачётка и оценки", "Record book and marks"), Modifier.fillMaxWidth(), small = true) { nav.push(Screen.Grades) } }
 }
 
@@ -250,7 +253,7 @@ private fun TrialsTab(d: Data, nav: Nav) {
 fun ExamRow(e: Exam, d: Data, onClick: () -> Unit) {
     val sub = d.subById[e.subjectId]
     val tk = d.tickets.filter { it.examId == e.id }
-    Row(Modifier.fillMaxWidth().padding(vertical = 4.dp).card(16.dp).clickable(onClick = onClick).padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().padding(vertical = 4.dp).parchment(16.dp).clickable(onClick = onClick).padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.width(54.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             if (e.done) Prop("scroll", 36.dp) else { Text("${(e.day - d.today).coerceAtLeast(0)}", style = T.num.copy(color = if (e.day - d.today <= 3) C.bad else C.acc)); Text(tr("дн.", "days"), style = T.tiny) }
         }
@@ -287,7 +290,7 @@ private fun SubjectList(d: Data, nav: Nav) {
         val gs = d.grades.filter { it.subjectId == s.id && it.examId == 0L }
         val term = Timetable.term(d.s, d.today)
         val termGs = if (term != null) gs.filter { it.day in term } else gs
-        Row(Modifier.fillMaxWidth().padding(vertical = 4.dp).card(16.dp).clickable { nav.push(Screen.SubjectInfo(s.id)) }.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.fillMaxWidth().padding(vertical = 4.dp).parchment(16.dp).clickable { nav.push(Screen.SubjectInfo(s.id)) }.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
             SchoolMark(s.school, 42.dp); Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f)) {
                 Text(s.name, style = T.bodyB, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -306,7 +309,7 @@ fun SubjectsPage(d: Data, nav: Nav) {
     Page(tr("Предметы", "Subjects"), nav::pop, action = { Box(Modifier.size(40.dp).clip(CircleShape).clickable { add = true }, contentAlignment = Alignment.Center) { Icon(Icons.PLUS, C.ink, 22.dp) } }) {
                 SubjectList(d, nav)
         val arch = d.subjects.filter { it.archived }
-        if (arch.isNotEmpty()) { Section(tr("В архиве", "Archived")); arch.forEach { s -> Row2(s.name, Schools.of(s.school).title) { nav.push(Screen.SubjectInfo(s.id)) } } }
+        if (arch.isNotEmpty()) { Ornate(tr("В архиве", "Archived")); arch.forEach { s -> Row2(s.name, Schools.of(s.school).title) { nav.push(Screen.SubjectInfo(s.id)) } } }
     }
     if (add) SubjectSheet(null, d) { add = false }
 }
@@ -379,7 +382,7 @@ fun SubjectPage(id: Long, d: Data, nav: Nav) {
         if (!d.s.self) {
             val gs = d.grades.filter { it.subjectId == id && it.examId == 0L }
             val term = Timetable.term(d.s, d.today); val termGs = if (term != null) gs.filter { it.day in term } else gs
-            Section(if (d.s.scale == "100") tr("Баллы", "Points") else tr("Оценки", "Marks"), action = tr("Добавить", "Add")) { grade = true }
+            Ornate(if (d.s.scale == "100") tr("Баллы", "Points") else tr("Оценки", "Marks"), action = tr("Добавить", "Add")) { grade = true }
             if (gs.isEmpty()) Empty(tr("Оценок пока нет", "No marks yet"))
             else {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -396,23 +399,23 @@ fun SubjectPage(id: Long, d: Data, nav: Nav) {
             }
         }
         val mats = d.materials.filter { it.subjectId == id && !it.archived }
-        Section(tr("Материалы", "Materials"), action = tr("Добавить", "Add")) { nav.push(Screen.MaterialInfo(0, id)) }
+        Ornate(tr("Материалы", "Materials"), action = tr("Добавить", "Add")) { nav.push(Screen.MaterialInfo(0, id)) }
         if (mats.isEmpty()) Empty(tr("Курс, учебник, задачник – чтобы видеть, сколько пройдено", "A course, textbook or problem book – to see how far you've got"))
         mats.forEach { m -> MaterialRow(m, d) { nav.push(Screen.MaterialInfo(m.id)) } }
         val tasks = d.tasks.filter { it.subjectId == id && it.open }
-        Section(tr("Задания", "Tasks"), action = tr("Добавить", "Add")) { nav.push(Screen.TaskInfo(0, id)) }
+        Ornate(tr("Задания", "Tasks"), action = tr("Добавить", "Add")) { nav.push(Screen.TaskInfo(0, id)) }
         if (tasks.isEmpty()) Empty(tr("Ничего не задано", "Nothing set"))
         val c = LocalContext.current.container
         tasks.forEach { t -> TaskRow(t, d, { nav.push(Screen.TaskInfo(t.id)) }) { c.write { setTaskState(t, (t.state + 1).coerceAtMost(t.last)) } } }
         val exams = d.exams.filter { it.subjectId == id }
-        if (exams.isNotEmpty()) { Section(tr("Испытания", "Trials")); exams.forEach { e -> ExamRow(e, d) { nav.push(Screen.ExamInfo(e.id)) } } }
+        if (exams.isNotEmpty()) { Ornate(tr("Испытания", "Trials")); exams.forEach { e -> ExamRow(e, d) { nav.push(Screen.ExamInfo(e.id)) } } }
         val slots = d.slots.filter { it.subjectId == id }
-        if (slots.isNotEmpty()) { Section(tr("В расписании", "In the timetable"))
+        if (slots.isNotEmpty()) { Ornate(tr("В расписании", "In the timetable"))
             androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 slots.sortedWith(compareBy({ it.weekday }, { it.start })).forEach { sl -> Text("${dayShort(sl.weekday - 1)} ${hm(sl.start)} · ${Words.slotKind(sl.kind)}" + when (sl.parity) { 1 -> tr(" · числ.", " · odd"); 2 -> tr(" · знам.", " · even"); else -> "" },
                     style = T.smallB, modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(C.card).padding(horizontal = 10.dp, vertical = 6.dp)) } } }
         if (s.teacher.isNotBlank() || s.rules.isNotBlank() || s.contact.isNotBlank()) {
-            Section(if (d.s.school) tr("Учитель", "Teacher") else tr("Магистр", "The master"))
+            Ornate(if (d.s.school) tr("Учитель", "Teacher") else tr("Магистр", "The master"))
             if (s.teacher.isNotBlank()) Text(s.teacher, style = T.bodyB)
             if (s.contact.isNotBlank()) Text(s.contact, style = T.small)
             if (s.rules.isNotBlank()) Text(s.rules, style = T.body, modifier = Modifier.padding(top = 4.dp))

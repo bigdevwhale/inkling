@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.style.TextOverflow
@@ -56,7 +57,9 @@ import app.inkling.ui.components.ChipRow
 import app.inkling.ui.components.Empty
 import app.inkling.ui.components.Heat
 import app.inkling.ui.components.Meter
-import app.inkling.ui.components.Section
+import app.inkling.ui.components.Ornate
+import app.inkling.ui.components.parchment
+import app.inkling.ui.components.SceneHeader
 import app.inkling.ui.components.Segments
 import app.inkling.ui.components.Split
 import app.inkling.ui.components.TileGrid
@@ -79,9 +82,9 @@ fun StatsScreen(d: Data, nav: Nav) {
     val span = Spans.of(kinds[k], back, d.first, d.today, Timetable.terms(d.s))
     val st = Stats(d.studies, span, d.subById, d.today)
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 18.dp)) {
-        Row(Modifier.fillMaxWidth().padding(top = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(tr("Летопись", "The chronicle"), style = T.title, modifier = Modifier.weight(1f))
-            Prop("scroll", 34.dp, Modifier.clickable { nav.push(Screen.Wrapped(java.time.LocalDate.ofEpochDay(d.today).year)) })
+        SceneHeader("banner_chronicle", tr("Летопись", "The chronicle"), tr("${dur(d.studies.sumOf { it.minutes } * 60)} учёбы с ${fmtDayShort(d.first)}", "${dur(d.studies.sumOf { it.minutes } * 60)} of study since ${fmtDayShort(d.first)}"), Modifier.padding(top = 10.dp)) {
+            Box(Modifier.align(Alignment.TopEnd).padding(10.dp).clip(RoundedCornerShape(50)).background(Color(0x55100A20)).clickable { nav.push(Screen.Wrapped(java.time.LocalDate.ofEpochDay(d.today).year)) }.padding(horizontal = 10.dp, vertical = 4.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) { Prop("scroll", 24.dp); Spacer(Modifier.width(4.dp)); Text(tr("Год", "Year"), style = T.smallB.copy(color = Color(0xFFFFF4DC))) } }
         }
         ChipRow(listOf(tr("Неделя", "Week"), tr("Месяц", "Month"), Words.term(d.s).replaceFirstChar { it.uppercase() }, tr("Год", "Year"), tr("Всё", "All")), k, Modifier.padding(top = 10.dp)) { k = it; back = 0 }
         if (kinds[k] != SpanKind.ALL) Row(Modifier.fillMaxWidth().padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -109,17 +112,17 @@ private fun Overview(st: Stats, d: Data, nav: Nav) {
     if (st.count == 0) { Empty(tr("В этот срок занятий нет. Зажгите свечу – и летопись начнётся.", "No study in this span. Light a candle and the chronicle begins.")); return }
     Spacer(Modifier.height(12.dp))
     val delta = if (st.minutesBefore > 0) (st.minutes - st.minutesBefore) * 100 / st.minutesBefore else null
-    TileGrid(listOf(
+    TileGrid(parch = true, items = listOf(
         Triple(dur(st.minutes * 60), tr("учёбы", "of study"), delta?.let { (if (it >= 0) "+" else "") + "$it%" }),
         Triple("${st.days}", tr("дней с учёбой", "days with study"), null),
         Triple("${(st.clean * 100).toInt()}%", tr("без отвлечений", "undisturbed"), null),
         Triple("${st.streakWeeks()}", tr("недель подряд", "weeks in a row"), null),
     ))
-    Section(tr("Часы по неделям", "Hours by week"))
+    Ornate(tr("Часы по неделям", "Hours by week"))
     val wk = st.weeks(12)
     Bars(wk, color = C.acc, hi = wk.lastIndex)
-    Section(tr("Календарь", "Calendar"))
-    Box(Modifier.fillMaxWidth().card(16.dp).padding(12.dp)) { minOf(st.span.to, d.today).let { to -> Heat(st.all.groupBy { it.day }.mapValues { e -> e.value.sumOf { it.minutes } }, minOf(st.span.from, to - 7 * 20).coerceAtLeast(d.first - 7), to) } }
+    Ornate(tr("Календарь", "Calendar"))
+    Box(Modifier.fillMaxWidth().parchment(16.dp).padding(12.dp)) { minOf(st.span.to, d.today).let { to -> Heat(st.all.groupBy { it.day }.mapValues { e -> e.value.sumOf { it.minutes } }, minOf(st.span.from, to - 7 * 20).coerceAtLeast(d.first - 7), to) } }
     st.bestDay?.let { (day, m) -> Text(tr("Лучший день – ${fmtDayShort(day)}, ${dur(m * 60)}", "Best day: ${fmtDayShort(day)}, ${dur(m * 60)}"), style = T.small, modifier = Modifier.padding(top = 8.dp)) }
 }
 
@@ -127,12 +130,12 @@ private fun Overview(st: Stats, d: Data, nav: Nav) {
 private fun Subjects(st: Stats, d: Data, nav: Nav) {
     val list = st.bySubject()
     if (list.isEmpty()) { Empty(tr("Пока пусто", "Nothing yet")); return }
-    Section(tr("Звезда школ", "The star of schools"))
+    Ornate(tr("Звезда школ", "The star of schools"))
     val bySchool = st.bySchool()
-    Box(Modifier.fillMaxWidth().card(18.dp).padding(12.dp), contentAlignment = Alignment.Center) { SchoolStar(bySchool, Modifier.size(240.dp)) }
-        Section(tr("Предметы", "Subjects"))
+    Box(Modifier.fillMaxWidth().parchment(18.dp).padding(12.dp), contentAlignment = Alignment.Center) { SchoolStar(bySchool, Modifier.size(240.dp)) }
+        Ornate(tr("Предметы", "Subjects"))
     list.forEach { s ->
-        Column(Modifier.fillMaxWidth().padding(vertical = 4.dp).card(14.dp).clickable { s.subject?.let { nav.push(Screen.SubjectInfo(it.id)) } }.padding(12.dp)) {
+        Column(Modifier.fillMaxWidth().padding(vertical = 4.dp).parchment(14.dp).clickable { s.subject?.let { nav.push(Screen.SubjectInfo(it.id)) } }.padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(s.subject?.name ?: "–", style = T.bodyB, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(dur(s.minutes * 60), style = T.numS)
@@ -143,7 +146,7 @@ private fun Subjects(st: Stats, d: Data, nav: Nav) {
     // hours vs credits: where the work goes against the weight
     val withCredits = d.active.filter { it.credits > 0 }
     if (withCredits.size >= 2) {
-        Section(tr("Часы и кредиты", "Hours and credits"))
+        Ornate(tr("Часы и кредиты", "Hours and credits"))
         val totC = withCredits.sumOf { it.credits }; val totM = list.filter { it.subject in withCredits }.sumOf { it.minutes }.coerceAtLeast(1)
         withCredits.forEach { s -> val m = list.firstOrNull { it.subject?.id == s.id }?.minutes ?: 0
             val ratio = (m.toDouble() / totM) / (s.credits / totC)
@@ -178,21 +181,21 @@ fun SchoolStar(by: Map<String, Int>, modifier: Modifier = Modifier) {
 private fun MemoryView(d: Data) {
     val m = Memory(d.spells, d.today)
     Spacer(Modifier.height(12.dp))
-    TileGrid(listOf(
+    TileGrid(parch = true, items = listOf(
         Triple("${m.total}", tr("заклинаний", "spells"), null),
         Triple("${m.learned}", tr("выучено", "learned"), null),
         Triple("${(m.rate * 100).toInt()}%", tr("вспоминаете", "recalled"), null),
         Triple("${m.due}", tr("ждут сфинкса", "await the sphinx"), null),
     ))
-    Section(tr("Кривая памяти", "The memory curve"))
+    Ornate(tr("Кривая памяти", "The memory curve"))
     Text(tr("от новых – к выученным", "from new to learned"), style = T.tiny, modifier = Modifier.padding(bottom = 8.dp))
     Bars(m.steps.mapIndexed { i, n -> (if (i == 0) tr("нов", "new") else if (i == m.steps.lastIndex) "✦" else "${app.inkling.domain.Engine.STEPS[i]}") to n.toDouble() }, color = C.acc, fmtv = { "${it.toInt()}" })
     val teach = d.studies.filter { it.kind == Study.TEACH }
-    Section(tr("Объяснения фамильяру", "Explanations to the familiar"))
+    Ornate(tr("Объяснения фамильяру", "Explanations to the familiar"))
     Text(if (teach.isEmpty()) tr("Ещё не объясняли. Попробуйте – это лучший способ понять тему.", "None yet. Try it – it's the best way to understand a topic.")
         else tr("${teach.size} раз · ${dur(teach.sumOf { it.minutes } * 60)}", "${teach.size} times · ${dur(teach.sumOf { it.minutes } * 60)}"), style = T.body)
     val ahead = d.upcoming.filter { e -> d.tickets.any { it.examId == e.id } }
-    if (ahead.isNotEmpty()) { Section(tr("Готовность к испытаниям", "Readiness for trials"))
+    if (ahead.isNotEmpty()) { Ornate(tr("Готовность к испытаниям", "Readiness for trials"))
         ahead.forEach { e -> val tk = d.tickets.filter { it.examId == e.id }; val f = tk.count { it.level >= 2 }.toFloat() / tk.size
             Column(Modifier.padding(vertical = 5.dp)) {
                 Row { Text(e.title.ifBlank { d.subById[e.subjectId]?.name.orEmpty() }, style = T.smallB, modifier = Modifier.weight(1f)); Text("${(f * 100).toInt()}% · ${fmtDayShort(e.day)}", style = T.tiny) }
@@ -203,7 +206,7 @@ private fun MemoryView(d: Data) {
 private fun Progress(st: Stats, d: Data) {
     val duty = Duty(d.tasks, d.attends, st.span, d.today)
     Spacer(Modifier.height(12.dp))
-    TileGrid(listOf(
+    TileGrid(parch = true, items = listOf(
         Triple("${duty.done}", tr("заданий сделано", "tasks done"), null),
         Triple("${duty.onTime}", tr("вовремя", "on time"), null),
         Triple("${duty.late}", tr("просрочено", "overdue"), null),
@@ -211,7 +214,7 @@ private fun Progress(st: Stats, d: Data) {
     ))
     val gs = d.grades.filter { it.examId == 0L && st.span.has(it.day) }
     if (gs.isNotEmpty()) {
-        Section(if (d.s.scale == "100") tr("Баллы по предметам", "Points by subject") else tr("Средний по предметам", "Average by subject"))
+        Ornate(if (d.s.scale == "100") tr("Баллы по предметам", "Points by subject") else tr("Средний по предметам", "Average by subject"))
         val rows = gs.groupBy { it.subjectId }.mapNotNull { (id, l) -> d.subById[id]?.let { it to Marks.term(d.s.scale, l, d.s.passes)!! } }.sortedByDescending { it.second }
         rows.forEach { (s, v) -> Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(s.name, style = T.small.copy(color = C.ink), modifier = Modifier.width(120.dp), maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -219,26 +222,26 @@ private fun Progress(st: Stats, d: Data) {
             Text(fmt1(v), style = T.smallB, modifier = Modifier.width(44.dp), textAlign = androidx.compose.ui.text.style.TextAlign.End) } }
         Text(tr("Высших оценок: ${gs.count { Marks.isTop(d.s.scale, it.value, d.s.passes) }} из ${gs.size}", "Top marks: ${gs.count { Marks.isTop(d.s.scale, it.value, d.s.passes) }} of ${gs.size}"), style = T.small, modifier = Modifier.padding(top = 6.dp))
     }
-    Marks.gpa(d.s.scale, d.exams) { id -> d.subById[id]?.credits ?: 0.0 }?.let { g -> Section(tr("Средний балл испытаний", "Trials average")); Text(fmt1(g), style = T.big.copy(color = C.acc)) }
+    Marks.gpa(d.s.scale, d.exams) { id -> d.subById[id]?.credits ?: 0.0 }?.let { g -> Ornate(tr("Средний балл испытаний", "Trials average")); Text(fmt1(g), style = T.big.copy(color = C.acc)) }
 }
 
 @Composable
 private fun Habits(st: Stats) {
     if (st.count == 0) { Empty(tr("Пока пусто", "Nothing yet")); return }
-    Section(tr("По дням недели", "By weekday"))
+    Ornate(tr("По дням недели", "By weekday"))
     Bars(st.weekdays().mapIndexed { i, v -> dayShort(i) to v / 60 }, color = C.acc, fmtv = { fmt1(it) })
-    Section(tr("По часам", "By hour"))
+    Ornate(tr("По часам", "By hour"))
     val h = st.hours()
     Bars((6..23).map { "$it" to h[it] / 60.0 } + listOf("0–5" to (0..5).sumOf { h[it] } / 60.0), color = C.gold)
     val morning = (5..11).sumOf { h[it] }.toDouble(); val evening = (18..23).sumOf { h[it] } + (0..4).sumOf { h[it] }.toDouble()
     Spacer(Modifier.height(10.dp))
     Split(morning, evening, tr("утро", "morning"), tr("вечер", "evening"), C.gold, C.acc)
-    Section(tr("Длина занятий", "Session length"))
+    Ornate(tr("Длина занятий", "Session length"))
     val l = st.lengths()
     Bars(listOf(tr("≤15", "≤15") to l[0].toDouble(), "15–30" to l[1].toDouble(), "30–50" to l[2].toDouble(), "50–90" to l[3].toDouble(), "90+" to l[4].toDouble()), color = C.ok, fmtv = { "${it.toInt()}" })
     Spacer(Modifier.height(10.dp))
     Split(st.deep.toDouble(), st.short.toDouble(), tr("глубокие (50+ мин)", "deep (50+ min)"), tr("короткие", "short"), C.acc, C.mana)
-    Section(tr("Отвлечения", "Distractions"))
+    Ornate(tr("Отвлечения", "Distractions"))
     Text(tr("За срок пламя дрогнуло ${st.distractions} раз. Свечей без единого отвлечения – ${(st.clean * 100).toInt()}%.", "The flame flickered ${st.distractions} times. Candles with no distraction at all: ${(st.clean * 100).toInt()}%."), style = T.body)
 }
 
