@@ -6,9 +6,9 @@ line "<!-- tg", then 2-4 short lines in Russian for users (what is new, what is 
 then close it like any HTML comment. The release notes carry it, and the chat bot posts those lines.
 -->
 
-## [Unreleased]
+## [1.0.0] - 2026-11-12
 
-The first version of Inkling.
+The first release of Inkling.
 
 - A study tracker set in an academy of magic, for school, college, university or studying on your own. Any subject goes into one of 14 schools of magic, guessed from its name.
 - The candle: a timed lesson; put the phone face down and the circle closes. Distractions are counted, never punished; a break follows.
@@ -20,7 +20,7 @@ The first version of Inkling.
 - The chronicle: hours, the calendar, the star of schools, memory, progress, habits, a year in the academy; eleven kinds of share cards.
 
 <!-- tg
-Inkling – учёба в академии магии: для школы, колледжа, вуза и самостоятельных занятий. Любой предмет попадает в свою школу магии.
-Свеча-таймер с телефоном экраном вниз, расписание с числителем и знаменателем, задания, лабы, курсовые, билеты к экзаменам и прогноз балла ЕГЭ.
-Гримуар со сфинксом, «Научи фамильяра», сундук вопросов и 24 волшебных существа, которые растут по ночам, пока вы учитесь.
+Inkling – учёба в академии магии. Подходит для школы, колледжа, вуза и для самостоятельных занятий: любой ваш предмет попадёт в одну из школ магии.
+Зажгите свечу, положите телефон экраном вниз и занимайтесь. Расписание, домашние задания, лабы и билеты к экзаменам тоже здесь.
+Пока вы учитесь, в башне растут волшебные существа. Их 24, и каждое появляется за свою привычку.
 -->

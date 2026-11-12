@@ -1,8 +1,8 @@
 #!/bin/bash
 # Screenshots of the -Pdemo -Pshots build in one language, opened straight on each screen by intent extras.
-# Usage: tools/capture.sh en|ru   (ANDROID_SERIAL picks the phone; the 13 Pro by default)
+# Usage: tools/capture.sh en|ru   (ANDROID_SERIAL picks the phone; the Mi 9 by default)
 set -e
-export ANDROID_SERIAL=${ANDROID_SERIAL:-a78f414d} JAVA_HOME="/c/Program Files/Android/Android Studio/jbr"
+export ANDROID_SERIAL=${ANDROID_SERIAL:-d7a925e6} JAVA_HOME="/c/Program Files/Android/Android Studio/jbr"
 cd "$(dirname "$0")/.."
 L=$1; P=app.inkling.demo; OUT=docs/screenshots/$L; mkdir -p $OUT
 ./gradlew assembleDebug -Pdemo -Pshots -Pdemolang=$L -q 2>&1 | grep -E "^e: |FAILED" && exit 1
@@ -14,10 +14,10 @@ shot() { [ "$(adb shell dumpsys telephony.registry | grep -m1 mCallState | tr -d
   f=$(adb shell dumpsys window | grep -m1 mCurrentFocus); echo "$f" | grep -q "$P" || { echo "focus lost: $f"; exit 1; }
   adb exec-out screencap -p > $OUT/$1.png; }
 shot 1-home "--ei tab 0" 8
-shot 2-journal "--ei tab 1"
+shot 2-academy "--ei tab 1"
 shot 3-pets "--ei tab 2"
 shot 4-stats "--ei tab 3"
-shot 5-pet "--ei tab 2 --es open pet:lead"
-shot 6-cellar "--ei tab 0 --es open cellar"
+shot 5-grimoire "--ei tab 0 --es open grimoire"
+shot 6-candle "--ei tab 0 --es open candle"
 adb shell am force-stop $P
 echo done $L

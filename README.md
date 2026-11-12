@@ -3,9 +3,16 @@
 <h1 align="center">Inkling</h1>
 
 <p align="center">Study in an academy of magic, with creatures that learn alongside you.<br>
-<a href="https://github.com/bigdevwhale/inkling/releases/latest/download/Inkling.apk">Download APK</a> · <a href="README.ru.md">Русский</a></p>
+<a href="https://bigdevwhale.github.io/stillcraft/apps/inkling/">Website</a> · <a href="https://github.com/bigdevwhale/inkling/releases/latest/download/Inkling.apk">Download APK</a> · <a href="README.ru.md">Русский</a></p>
 
 You are a student of an old academy of magic, and your room is at the top of a tower. Every real subject belongs to one of its schools: calculus to Numerology, programming to Artificing, languages to Runes, anatomy to Healing. While you study, the creatures in your tower feed on knowledge, and at night they grow – as memory does in sleep. It works at school, at college, at university and for studying on your own.
+
+<p align="center">
+<img src="docs/screenshots/en/1-home.png" width="200" alt="The tower">
+<img src="docs/screenshots/en/2-academy.png" width="200" alt="The academy">
+<img src="docs/screenshots/en/3-pets.png" width="200" alt="Creatures">
+<img src="docs/screenshots/en/4-stats.png" width="200" alt="The chronicle">
+</p>
 
 ## What's inside
 
