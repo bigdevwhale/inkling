@@ -110,9 +110,7 @@ fun StudyPage(scr: Screen.StudyEdit, d: Data, nav: Nav) {
     var note by remember { mutableStateOf(old?.note ?: "") }
     var spell by remember { mutableStateOf("") }
     Page(if (old == null) tr("Занятие", "Study") else tr("Занятие", "Study"), nav::pop) {
-        Text(tr("Учились без свечи – на паре, в библиотеке, с репетитором? Запишите, и существа получат своё.",
-            "Studied without the candle – in class, in the library, with a tutor? Write it down and your creatures get their share."), style = T.small)
-        Text(tr("Предмет", "Subject"), style = T.sec, modifier = Modifier.padding(top = 14.dp, bottom = 8.dp))
+        Text(tr("Предмет", "Subject"), style = T.sec, modifier = Modifier.padding(bottom = 8.dp))
         SubjectPicker(d.active, sub) { sub = it; mat = 0 }
         Text(tr("Сколько минут", "Minutes"), style = T.sec, modifier = Modifier.padding(top = 14.dp, bottom = 8.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) { listOf(15, 30, 45, 60, 90, 120).forEach { m -> Chip("$m", minutes == m, Modifier.weight(1f)) { minutes = m } } }
@@ -247,26 +245,22 @@ fun GrimoirePage(quiz0: Boolean, d: Data, nav: Nav) {
             Mini("sphinx", 64.dp); Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f)) {
                 Text(count(m.total, "заклинание", "заклинания", "заклинаний", "spell", "spells"), style = T.h3)
-                Text(tr("выучено ${m.learned} · вспомнили ${(m.rate * 100).toInt()}% раз", "${m.learned} learned · recalled ${(m.rate * 100).toInt()}% of the time"), style = T.small)
+                Text(tr("выучено ${m.learned}", "${m.learned} learned"), style = T.small)
             }
         }
         if (d.due.isNotEmpty()) Btn(tr("Сфинкс спрашивает: ${d.due.size}", "The sphinx asks: ${d.due.size}"), Modifier.fillMaxWidth().padding(top = 12.dp)) { quiz = true }
-        else Text(tr("Сегодня сфинкс спокоен – все заклинания свежи.", "The sphinx is calm today – every spell is fresh."), style = T.small, modifier = Modifier.padding(top = 10.dp))
-        // the steps: how many spells stand where on the way to learned
-        Row(Modifier.fillMaxWidth().padding(top = 14.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            val labels = listOf(tr("новые", "new"), "3", "7", "21", "60", "✦")
-            m.steps.forEachIndexed { i, n -> Column(Modifier.weight(1f).clip(RoundedCornerShape(10.dp)).background(C.accSoft.copy(alpha = .3f + .7f * i / m.steps.size)).padding(vertical = 6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("$n", style = T.smallB); Text(labels.getOrElse(i) { "" }, style = T.tiny) } }
-        }
-        Text(tr("Ступени: через сколько дней сфинкс спросит снова", "Steps: in how many days the sphinx asks again"), style = T.tiny, modifier = Modifier.padding(top = 4.dp))
+        
         val subs = d.spells.map { it.subjectId }.distinct().mapNotNull { d.subById[it] }
         if (subs.size > 1) { Spacer(Modifier.height(12.dp)); SubjectPicker(subs, filter, allowNone = false) { filter = if (filter == it) 0 else it } }
         val list = d.spells.filter { filter == 0L || it.subjectId == filter }.sortedByDescending { it.created }
         if (list.isEmpty()) Empty(tr("Пусто. После урока запишите, что запомнили, – это и есть заклинание.", "Empty. After a lesson write down what stuck – that's a spell."))
-        list.groupBy { it.subjectId }.forEach { (sid, l) ->
+        list.filter { !Engine.learned(it) }.sortedBy { if (it.due <= d.today) 0 else 1 }.groupBy { it.subjectId }.forEach { (sid, l) ->
             Section(d.subById[sid]?.name ?: tr("Без предмета", "No subject"))
             l.forEach { sp -> SpellRow(sp, d) { edit = sp } }
         }
+        val learned = list.filter { Engine.learned(it) }
+        if (learned.isNotEmpty()) app.inkling.ui.components.Fold(Icons.STAR, C.gold, tr("Выученные", "Learned"), "${learned.size}", Modifier.padding(top = 14.dp)) {
+            learned.forEach { sp -> SpellRow(sp, d) { edit = sp } } }
         Spacer(Modifier.height(20.dp))
     }
     if (add) SpellSheet(d, filter) { add = false }
@@ -284,8 +278,7 @@ private fun SpellRow(sp: Spell, d: Data, onClick: () -> Unit) {
         Spacer(Modifier.width(10.dp))
         Column(Modifier.weight(1f)) {
             Text(sp.title, style = T.bodyB, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text(when { learned -> tr("выучено", "learned"); sp.due <= d.today -> tr("пора вспомнить", "time to recall"); else -> tr("сфинкс спросит ${relDay(sp.due, d.today)}", "the sphinx asks ${relDay(sp.due, d.today)}") },
-                style = T.tiny.copy(color = if (sp.due <= d.today && !learned) C.acc else C.mute))
+            if (learned || sp.due <= d.today) Text(if (learned) tr("выучено", "learned") else tr("пора вспомнить", "time to recall"), style = T.tiny.copy(color = if (learned) C.gold else C.acc))
         }
         if (sp.last == 3) Text("↺", style = T.smallB.copy(color = C.bad))
     }
@@ -351,8 +344,7 @@ fun ChestPage(d: Data, nav: Nav) {
     Page(tr("Сундук мимика", "The mimic's chest"), nav::pop, action = { Box(Modifier.size(40.dp).clip(CircleShape).clickable { add = true }, contentAlignment = Alignment.Center) { Icon(Icons.PLUS, C.ink, 22.dp) } }) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Mini("mimic", 64.dp); Spacer(Modifier.width(10.dp))
-            Text(tr("Сюда – всё, что непонятно. Вопрос без ответа – не беда, а начало. Нашли ответ – мимик выплюнет его кристаллом.",
-                "Everything unclear goes here. An open question is a beginning, not a failure. Find the answer and the mimic spits out a crystal."), style = T.small, modifier = Modifier.weight(1f))
+            Text(tr("Всё, что пока непонятно. Нашли ответ – мимик отдаст кристалл.", "Whatever is unclear for now. Find the answer and the mimic gives a crystal."), style = T.small, modifier = Modifier.weight(1f))
         }
         val openQ = d.questions.filter { it.answered == 0L }; val done = d.questions.filter { it.answered > 0L }
         Section(tr("Ждут ответа · ${openQ.size}", "Waiting · ${openQ.size}"))
@@ -423,9 +415,7 @@ fun coreName(sp: String) = when (sp) {
 fun WandPage(d: Data, nav: Nav) {
     val w = WandSpec(d)
     Page(tr("Ваша палочка", "Your wand"), nav::pop, action = { Box(Modifier.size(40.dp).clip(CircleShape).clickable { nav.share = app.inkling.ui.share.ShareReq(app.inkling.ui.share.CardKind.WAND, 0) }, contentAlignment = Alignment.Center) { Icon(Icons.SHARE, C.ink, 22.dp) } }) {
-        Text(tr("Палочка складывается из того, как вы учитесь, и меняется вместе с вами. Двух одинаковых не бывает.",
-            "The wand is made of the way you study and changes with you. No two are alike."), style = T.small)
-        Box(Modifier.fillMaxWidth().padding(vertical = 14.dp).card(22.dp, Color(0xFF1B1733)), contentAlignment = Alignment.Center) { WandArt(w, Modifier.fillMaxWidth().height(170.dp)) }
+        Box(Modifier.fillMaxWidth().padding(bottom = 14.dp).card(22.dp, Color(0xFF1B1733)), contentAlignment = Alignment.Center) { WandArt(w, Modifier.fillMaxWidth().height(170.dp)) }
         Row2(tr("Древесина", "Wood"), tr("от главной школы: ${w.school.title}", "from your main school: ${w.school.title}"), w.school.wood.replaceFirstChar { it.uppercase() })
         Row2(tr("Сердцевина", "Core"), tr("от вожака башни", "from the tower's leader"), w.coreName.replaceFirstChar { it.uppercase() })
         Row2(tr("Длина", "Length"), tr("растёт с часами учёбы: ${w.hours} ч", "grows with hours of study: ${w.hours} h"), tr("${w.length} см", "${w.length} cm"))

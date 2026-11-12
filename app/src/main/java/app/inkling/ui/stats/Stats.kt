@@ -112,20 +112,15 @@ private fun Overview(st: Stats, d: Data, nav: Nav) {
     TileGrid(listOf(
         Triple(dur(st.minutes * 60), tr("учёбы", "of study"), delta?.let { (if (it >= 0) "+" else "") + "$it%" }),
         Triple("${st.days}", tr("дней с учёбой", "days with study"), null),
-        Triple("${st.count}", tr("занятий", "sessions"), null),
-        Triple(dur(st.avg * 60), tr("в среднем за раз", "on average"), null),
-        Triple("${(st.clean * 100).toInt()}%", tr("свечей без отвлечений", "undisturbed candles"), null),
+        Triple("${(st.clean * 100).toInt()}%", tr("без отвлечений", "undisturbed"), null),
         Triple("${st.streakWeeks()}", tr("недель подряд", "weeks in a row"), null),
     ))
     Section(tr("Часы по неделям", "Hours by week"))
     val wk = st.weeks(12)
-    Bars(wk, color = C.acc, hi = wk.lastIndex, fmtv = { fmt1(it) })
+    Bars(wk, color = C.acc, hi = wk.lastIndex)
     Section(tr("Календарь", "Calendar"))
     Box(Modifier.fillMaxWidth().card(16.dp).padding(12.dp)) { minOf(st.span.to, d.today).let { to -> Heat(st.all.groupBy { it.day }.mapValues { e -> e.value.sumOf { it.minutes } }, minOf(st.span.from, to - 7 * 20).coerceAtLeast(d.first - 7), to) } }
-    st.bestDay?.let { (day, m) -> Text(tr("Самый учёный день – ${fmtDayShort(day)}: ${dur(m * 60)}", "The most studious day: ${fmtDayShort(day)}, ${dur(m * 60)}"), style = T.small, modifier = Modifier.padding(top = 8.dp)) }
-    Text(tr("Самое долгое занятие – ${dur(st.longest * 60)}", "The longest session: ${dur(st.longest * 60)}"), style = T.small)
-    Section(tr("По месяцам", "By month"))
-    Bars(st.months(12), color = C.gold, fmtv = { fmt1(it) })
+    st.bestDay?.let { (day, m) -> Text(tr("Лучший день – ${fmtDayShort(day)}, ${dur(m * 60)}", "Best day: ${fmtDayShort(day)}, ${dur(m * 60)}"), style = T.small, modifier = Modifier.padding(top = 8.dp)) }
 }
 
 @Composable
@@ -135,8 +130,7 @@ private fun Subjects(st: Stats, d: Data, nav: Nav) {
     Section(tr("Звезда школ", "The star of schools"))
     val bySchool = st.bySchool()
     Box(Modifier.fillMaxWidth().card(18.dp).padding(12.dp), contentAlignment = Alignment.Center) { SchoolStar(bySchool, Modifier.size(240.dp)) }
-    Text(tr("Чем шире звезда, тем разностороннее учёба", "The wider the star, the more rounded the study"), style = T.tiny, modifier = Modifier.padding(top = 6.dp))
-    Section(tr("Предметы", "Subjects"))
+        Section(tr("Предметы", "Subjects"))
     list.forEach { s ->
         Column(Modifier.fillMaxWidth().padding(vertical = 4.dp).card(14.dp).clickable { s.subject?.let { nav.push(Screen.SubjectInfo(it.id)) } }.padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -144,7 +138,6 @@ private fun Subjects(st: Stats, d: Data, nav: Nav) {
                 Text(dur(s.minutes * 60), style = T.numS)
             }
             Meter(s.share, Modifier.padding(top = 6.dp), color = subjectColor(s.subject), h = 6.dp)
-            Text("${(s.share * 100).toInt()}% · ${s.count} ${tr("зан.", "sess.")}" + if (s.before > 0) tr(" · раньше ${dur(s.before * 60)}", " · before ${dur(s.before * 60)}") else "", style = T.tiny, modifier = Modifier.padding(top = 4.dp))
         }
     }
     // hours vs credits: where the work goes against the weight
@@ -190,11 +183,9 @@ private fun MemoryView(d: Data) {
         Triple("${m.learned}", tr("выучено", "learned"), null),
         Triple("${(m.rate * 100).toInt()}%", tr("вспоминаете", "recalled"), null),
         Triple("${m.due}", tr("ждут сфинкса", "await the sphinx"), null),
-        Triple("${d.questions.size}", tr("вопросов мимику", "questions asked"), null),
-        Triple("${d.questions.count { it.answered > 0 }}", tr("ответов найдено", "answers found"), null),
     ))
     Section(tr("Кривая памяти", "The memory curve"))
-    Text(tr("Сколько заклинаний на каждой ступени: новые → следующий вопрос через 3, 7, 21, 60 дней → выучено", "How many spells stand on each step: new → next ask in 3, 7, 21, 60 days → learned"), style = T.tiny, modifier = Modifier.padding(bottom = 8.dp))
+    Text(tr("от новых – к выученным", "from new to learned"), style = T.tiny, modifier = Modifier.padding(bottom = 8.dp))
     Bars(m.steps.mapIndexed { i, n -> (if (i == 0) tr("нов", "new") else if (i == m.steps.lastIndex) "✦" else "${app.inkling.domain.Engine.STEPS[i]}") to n.toDouble() }, color = C.acc, fmtv = { "${it.toInt()}" })
     val teach = d.studies.filter { it.kind == Study.TEACH }
     Section(tr("Объяснения фамильяру", "Explanations to the familiar"))

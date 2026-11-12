@@ -159,19 +159,18 @@ fun PetPage(id: Long, d: Data, nav: Nav) {
                                 Text("$v", style = T.smallB, modifier = Modifier.width(40.dp), textAlign = TextAlign.End)
                             }
                         }
-                        Text(tr("Каждая растёт от своего: ", "Each grows on its own thing: ") + Stat.entries.joinToString("; ") { "${it.title.lowercase()} ${it.why}" }, style = T.tiny, modifier = Modifier.padding(top = 8.dp))
                     }
-                    val schools = p.schoolMap().entries.sortedByDescending { it.value }.take(4)
+                    val schools = p.schoolMap().entries.sortedByDescending { it.value }.take(3)
                     if (schools.isNotEmpty()) {
                         Label(tr("Чему учился", "What it studied"))
                         Column(Modifier.fillMaxWidth().card(18.dp).padding(14.dp)) {
                             p.speciality()?.let { sc -> Text(tr("Специальность: ", "Speciality: ") + sc.title, style = T.bodyB.copy(color = Color(sc.color)), modifier = Modifier.padding(bottom = 6.dp)) }
-                                ?: Text(tr("Специальность появится, когда вырастет до подмастерья", "A speciality comes at the journeyman stage"), style = T.small, modifier = Modifier.padding(bottom = 6.dp))
+
                             val tot = schools.sumOf { it.value }.coerceAtLeast(1)
                             schools.forEach { (k, v) -> Row(Modifier.fillMaxWidth().padding(vertical = 3.dp), verticalAlignment = Alignment.CenterVertically) {
                                 app.inkling.ui.components.SchoolMark(k, 26.dp); Spacer(Modifier.width(8.dp))
                                 Text(Schools.of(k).title, style = T.small.copy(color = C.ink), modifier = Modifier.weight(1f))
-                                Text(dur(v * 60), style = T.tiny); Text("  ${v * 100 / tot}%", style = T.smallB) } }
+                                Text("${v * 100 / tot}%", style = T.smallB) } }
                         }
                     }
                 }
@@ -187,7 +186,6 @@ fun PetPage(id: Long, d: Data, nav: Nav) {
                                 horizontalAlignment = Alignment.CenterHorizontally) {
                                 Box(Modifier.alpha(if (reached) 1f else .25f)) { Creature(p.species, s, Pose.IDLE, 62.dp, shiny = p.shiny) }
                                 Text(s.title(), style = T.tiny.copy(color = if (reached) C.ink else C.mute), maxLines = 1, textAlign = TextAlign.Center)
-                                Text(when (s) { Stage.BABY -> "0"; Stage.TEEN -> "${Pets.TEEN}"; Stage.ADULT -> "${Pets.ADULT}"; else -> "${Pets.MASTER}" }, style = T.tiny)
                             }
                         }
                     }

@@ -110,9 +110,7 @@ fun MaterialPage(scr: Screen.MaterialInfo, d: Data, nav: Nav) {
         var total by remember { mutableStateOf(old?.total?.takeIf { it > 0 }?.toString() ?: "") }
         var done by remember { mutableStateOf(old?.done?.toString() ?: "0") }
         Page(if (old == null) tr("Новый материал", "A new material") else tr("Материал", "Material"), { if (old == null) nav.pop() else editing = false }) {
-            Text(tr("Онлайн-курс, учебник, задачник, видеокурс – то, что проходится по частям. Кицунэ отрастит хвост за каждый законченный.",
-                "An online course, a textbook, a problem book, a video course – something done in parts. The kitsune grows a tail for each one finished."), style = T.small)
-            Text(tr("Предмет", "Subject"), style = T.sec, modifier = Modifier.padding(top = 14.dp, bottom = 8.dp))
+            Text(tr("Предмет", "Subject"), style = T.sec, modifier = Modifier.padding(bottom = 8.dp))
             SubjectPicker(d.active, sub) { sub = it }
             Field(title, { title = it }, tr("Название", "Title"), modifier = Modifier.padding(top = 12.dp))
             Text(tr("Чем считается", "Counted in"), style = T.sec, modifier = Modifier.padding(top = 12.dp, bottom = 6.dp))
@@ -151,7 +149,7 @@ fun MaterialPage(scr: Screen.MaterialInfo, d: Data, nav: Nav) {
         }
         val mine = d.studies.filter { it.materialId == m.id }
         if (mine.isNotEmpty()) { Section(tr("Занятия · ${dur(mine.sumOf { it.minutes } * 60)}", "Sessions · ${dur(mine.sumOf { it.minutes } * 60)}"))
-            mine.take(15).forEach { st -> Row2(relDay(st.day, d.today), st.note.takeIf { it.isNotBlank() }, "${dur(st.minutes * 60)}${if (st.units > 0) " · +${st.units}" else ""}") { nav.push(Screen.StudyEdit(st.id)) } } }
+            mine.take(5).forEach { st -> Row2(relDay(st.day, d.today), st.note.takeIf { it.isNotBlank() }, "${dur(st.minutes * 60)}${if (st.units > 0) " · +${st.units}" else ""}") { nav.push(Screen.StudyEdit(st.id)) } } }
         Spacer(Modifier.height(24.dp))
     }
 }
@@ -373,8 +371,6 @@ fun GradesPage(d: Data, nav: Nav) {
     var add by remember { mutableStateOf(false) }
     val term = Timetable.term(d.s, d.today)
     Page(if (d.s.school) tr("Оценки", "Marks") else tr("Зачётка", "Record book"), nav::pop, action = { Box(Modifier.size(40.dp).clip(CircleShape).clickable { add = true }, contentAlignment = Alignment.Center) { Icon(Icons.PLUS, C.ink, 22.dp) } }) {
-        Text(when (d.s.scale) { "100" -> tr("Баллы складываются: ${d.s.passes[0]} – «3», ${d.s.passes[1]} – «4», ${d.s.passes[2]} – «5».", "Points add up: ${d.s.passes[0]} for a 3, ${d.s.passes[1]} for a 4, ${d.s.passes[2]} for a 5.")
-            else -> tr("Средний с весами, как в электронном дневнике. Округление – от половины.", "A weighted average, as in electronic diaries. Rounded from half up.") }, style = T.small)
         Section(if (term != null) tr("${Words.term(d.s).replaceFirstChar { it.uppercase() }} до ${fmtDayShort(term.last)}", "This ${Words.term(d.s)}, until ${fmtDayShort(term.last)}") else tr("Предметы", "Subjects"))
         d.active.forEach { s ->
             val gs = d.grades.filter { it.subjectId == s.id && it.examId == 0L && (term == null || it.day in term) }

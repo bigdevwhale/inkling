@@ -111,11 +111,7 @@ fun HomeScreen(d: Data, nav: Nav) {
         Row(Modifier.padding(top = 10.dp).fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(C.acc).clickable { nav.push(Screen.Candle) }.padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically) {
             Prop(if (s.candle.start > 0) "candle" else "stub", 36.dp); Spacer(Modifier.width(10.dp))
-            Column(Modifier.weight(1f)) {
-                Text(if (s.candle.start > 0) tr("Свеча горит", "The candle is burning") else tr("Зажечь свечу", "Light a candle"), style = T.btn.copy(color = C.accInk))
-                Text(if (s.candle.start > 0) tr("Вернуться к уроку", "Back to the lesson") else tr("${s.focus} минут учёбы с существами", "${s.focus} minutes of study with your creatures"),
-                    style = T.small.copy(color = C.accInk.copy(alpha = .8f)))
-            }
+            Text(if (s.candle.start > 0) tr("Свеча горит – вернуться", "The candle is burning – go back") else tr("Зажечь свечу", "Light a candle"), style = T.btn.copy(color = C.accInk), modifier = Modifier.weight(1f))
             Icon(Icons.NEXT, C.accInk, 20.dp)
         }
 
@@ -127,8 +123,7 @@ fun HomeScreen(d: Data, nav: Nav) {
             Row(Modifier.padding(top = 10.dp).fillMaxWidth().card(18.dp).clickable { quests = true }.padding(horizontal = 12.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
                 Prop("medal", 32.dp); Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(tr("Задания недели", "This week's quests"), style = T.bodyB)
-                    Text(next?.let { "${it.title} · +${it.mana}" } ?: tr("Все выполнены – новые в понедельник", "All done – new ones on Monday"), style = T.small, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(next?.title ?: tr("Задания недели выполнены", "This week's quests are done"), style = T.bodyB, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.padding(horizontal = 8.dp)) {
                     qs.forEach { q -> Box(Modifier.size(9.dp).clip(CircleShape).background(if (q.id in s.questsDone) C.ok else C.track)) }
@@ -138,14 +133,14 @@ fun HomeScreen(d: Data, nav: Nav) {
         }
 
         Row(Modifier.fillMaxWidth().padding(top = 14.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Door("book", tr("Гримуар", "Grimoire"), Modifier.weight(1f), if (d.due.isNotEmpty()) "${d.due.size}" else "${d.spells.size}", hot = d.due.isNotEmpty()) { nav.push(Screen.Grimoire()) }
-            Door("orb", tr("Сундук", "Chest"), Modifier.weight(1f), "${d.questions.count { it.answered == 0L }}") { nav.push(Screen.Chest) }
+            Door("book", tr("Гримуар", "Grimoire"), Modifier.weight(1f), d.due.size.takeIf { it > 0 }?.toString(), hot = d.due.isNotEmpty()) { nav.push(Screen.Grimoire()) }
+            Door("orb", tr("Сундук", "Chest"), Modifier.weight(1f)) { nav.push(Screen.Chest) }
             Door("", tr("Научи", "Teach"), Modifier.weight(1f), species = "raven") { nav.push(Screen.Teach()) }
             Door("wand", tr("Палочка", "Wand"), Modifier.weight(1f)) { nav.push(Screen.Wand) }
-            Door("books", tr("Предметы", "Subjects"), Modifier.weight(1f), "${d.active.size}") { nav.push(Screen.Subjects) }
+            Door("books", tr("Предметы", "Subjects"), Modifier.weight(1f)) { nav.push(Screen.Subjects) }
         }
 
-        Text(tr("Эта неделя", "This week"), style = T.sec, modifier = Modifier.padding(top = 18.dp, bottom = 8.dp))
+        Text(tr("Эта неделя", "This week") + (d.studies.filter { it.day >= weekStart(d.today) }.sumOf { it.minutes }.takeIf { it > 0 }?.let { " · " + dur(it * 60) } ?: ""), style = T.sec, modifier = Modifier.padding(top = 18.dp, bottom = 8.dp))
         Week(d)
         Spacer(Modifier.height(24.dp))
     }
@@ -259,7 +254,7 @@ private fun Door(prop: String, label: String, modifier: Modifier = Modifier, val
     Column(modifier.clip(RoundedCornerShape(14.dp)).background(if (hot) C.accSoft else C.card).clickable(onClick = onClick).padding(vertical = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         if (species != null) Mini(species, 34.dp) else Prop(prop, 34.dp)
         Text(label, style = T.tiny.copy(color = C.ink), maxLines = 1, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 2.dp))
-        Text(value ?: " ", style = T.tiny.copy(color = if (hot) C.acc else C.mute), maxLines = 1, textAlign = TextAlign.Center)
+        if (value != null) Text(value, style = T.tiny.copy(color = C.acc), maxLines = 1, textAlign = TextAlign.Center)
     }
 }
 
@@ -279,7 +274,6 @@ private fun Week(d: Data) {
                     else Box(Modifier.width(14.dp).height((4 + 48f * v / max).dp).clip(RoundedCornerShape(50)).background(if (v == 0) C.track else subjectColor(d.subById[main])))
                 }
                 Text(dayShort(i), style = T.tiny.copy(color = if (day == d.today) C.acc else C.mute), modifier = Modifier.padding(top = 4.dp))
-                Text(if (v > 0) (if (v >= 60) "${v / 60}${tr("ч", "h")}${if (v % 60 > 0) (v % 60).toString().padStart(2, '0') else ""}" else "$v'") else " ", style = T.tiny.copy(fontSize = T.tiny.fontSize * .85f), maxLines = 1)
             }
         }
     }

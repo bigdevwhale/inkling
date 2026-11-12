@@ -106,8 +106,7 @@ private fun Setup(d: Data, nav: Nav) {
     Page(tr("Свеча", "The candle"), nav::pop) {
         Row(verticalAlignment = Alignment.Bottom) {
             d.leader?.let { PetView(it, 110.dp, Pose.WORK) }
-            Text(tr("Что учим? Свеча горит, пока вы занимаетесь. Положите телефон экраном вниз – круг замкнётся, и ничто не отвлечёт.",
-                "What are we studying? The candle burns while you work. Put the phone face down – the circle closes and nothing distracts you."),
+            Text(tr("Положите телефон экраном вниз – круг замкнётся.", "Put the phone face down – the circle closes."),
                 style = T.small, modifier = Modifier.weight(1f).padding(start = 8.dp, bottom = 10.dp))
         }
         Text(tr("Предмет", "Subject"), style = T.sec, modifier = Modifier.padding(top = 14.dp, bottom = 8.dp))
@@ -123,11 +122,10 @@ private fun Setup(d: Data, nav: Nav) {
                 exams.forEach { e -> Pick("medal", e.title.ifBlank { Words.examKind(e.kind) }, Words.examKind(e.kind), exam == e.id) { exam = if (exam == e.id) 0 else e.id; mat = 0; task = 0 } }
             }
         }
-        Text(tr("Сколько горит", "How long it burns"), style = T.sec, modifier = Modifier.padding(top = 14.dp, bottom = 8.dp))
+        Text(tr("Сколько горит, мин", "How long, min"), style = T.sec, modifier = Modifier.padding(top = 14.dp, bottom = 8.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             listOf(10, 15, 25, 45, 60, 90).forEach { m -> Chip("$m", plan == m, Modifier.weight(1f)) { plan = m } }
         }
-        Text(tr("минут", "minutes"), style = T.tiny, modifier = Modifier.padding(top = 4.dp))
         Spacer(Modifier.height(20.dp))
         Btn(tr("Зажечь свечу", "Light the candle"), Modifier.fillMaxWidth(), enabled = sub != 0L) {
             c.write { light(sub, mat, task, exam, plan) }
@@ -223,8 +221,8 @@ private fun FinishSheet(d: Data, onCancel: () -> Unit, onSaved: () -> Unit) {
     var note by remember { mutableStateOf("") }
     var spell by remember { mutableStateOf("") }
     app.inkling.ui.components.Sheet(onCancel) {
-        Text(tr("Свеча погасла", "The candle is out"), style = T.h2)
-        Text(tr("Минуты уже засчитаны. Пара строк – и существа получат больше.", "The minutes are counted. A couple of lines and your creatures get more."), style = T.small, modifier = Modifier.padding(top = 2.dp, bottom = 10.dp))
+        Text(tr("Урок окончен", "The lesson is over"), style = T.h2)
+        Spacer(Modifier.height(10.dp))
         if (mat != null) {
             Text(tr("Сколько прошли: ", "How far: ") + Words.unitName(mat.unit).lowercase(), style = T.sec, modifier = Modifier.padding(bottom = 6.dp))
             Stepper(units, if (mat.unit == Material.PAGES) 5 else 1) { units = it }
@@ -263,8 +261,7 @@ private fun Rest(d: Data, nav: Nav) {
     Page(tr("Перемена", "Break"), nav::pop) {
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { Creature("cat", app.inkling.domain.Stage.ADULT, Pose.WORK, 180.dp) }
         Text("%d:%02d".format(left / 60_000, left / 1000 % 60), style = T.big, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
-        Text(tr("Встаньте, потянитесь, налейте воды, посмотрите в окно. Мозг укладывает выученное как раз в паузах.",
-            "Stand up, stretch, get some water, look out of the window. The brain files what you learned during exactly these pauses."),
+        Text(tr("Встаньте, потянитесь, посмотрите в окно.", "Stand up, stretch, look out of the window."),
             style = T.body.copy(color = C.mute), textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(top = 6.dp))
         Spacer(Modifier.height(20.dp))
         Btn(if (rested) tr("Перемена окончена", "Break is over") else tr("Пропустить перемену", "Skip the break"), Modifier.fillMaxWidth()) { c.write { endRest(rested) }; nav.pop() }

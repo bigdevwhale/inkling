@@ -71,14 +71,14 @@ fun Onboarding() {
                 0 -> {
                     Box(Modifier.fillMaxWidth().padding(top = 30.dp), contentAlignment = Alignment.Center) { Creature("inkling", Stage.BABY, Pose.CHEER, 200.dp) }
                     Text(tr("Добро пожаловать в академию", "Welcome to the academy"), style = T.title, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
-                    Text(tr("Это Кляксик – чернильный дух. Он будет жить с вами в башне, расти, пока вы учитесь, и записывать в гримуар всё, что вы запомнили. За учёбу находятся новые существа – их 24.",
-                        "This is the Inkling, a spirit of ink. It will live with you in the tower, grow while you study and write down in the grimoire everything you learn. Study brings new creatures – there are 24."),
+                    Text(tr("Это Кляксик. Он растёт, пока вы учитесь, а за учёбу находятся ещё 23 существа.",
+                        "This is the Inkling. It grows while you study, and study brings 23 more creatures."),
                         style = T.body.copy(color = C.mute), textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(top = 10.dp))
                     Field(name, { name = it.take(30) }, tr("Как вас записать в журнал академии? (по желанию)", "How shall the academy register you? (optional)"), modifier = Modifier.padding(top = 20.dp))
                 }
                 1 -> {
                     Text(tr("Где вы учитесь?", "Where do you study?"), style = T.title, modifier = Modifier.padding(top = 24.dp))
-                    Text(tr("От этого зависят слова и вкладки: уроки или пары, четверти или семестры, ОГЭ/ЕГЭ или сессия.", "This sets the words and tabs: lessons or classes, terms or semesters, state exams or a session."), style = T.small, modifier = Modifier.padding(top = 4.dp, bottom = 12.dp))
+                    Spacer(Modifier.height(12.dp))
                     listOf(Triple(Settings.SCHOOL, tr("Школа", "School"), tr("уроки, домашка, портфель, четверти, ОГЭ и ЕГЭ", "lessons, homework, the satchel, terms, state exams")),
                         Triple(Settings.COLLEGE, tr("Колледж", "College"), tr("пары, практика, семестры, зачёты", "classes, practice, semesters, credits")),
                         Triple(Settings.UNI, tr("Университет", "University"), tr("пары, лабы, курсовые, сессия, билеты, БРС", "classes, labs, coursework, the session, tickets, points")),
@@ -96,7 +96,7 @@ fun Onboarding() {
                 }
                 2 -> {
                     Text(tr("Что изучаете?", "What do you study?"), style = T.title, modifier = Modifier.padding(top = 24.dp))
-                    Text(tr("Любые предметы – как они называются у вас. Каждый попадёт в свою школу магии, её можно потом сменить.", "Any subjects, named as you call them. Each goes to a school of magic, which you can change later."), style = T.small, modifier = Modifier.padding(top = 4.dp, bottom = 10.dp))
+                    Text(tr("Как они называются у вас – каждый найдёт свою школу магии.", "Named as you call them – each finds its school of magic."), style = T.small, modifier = Modifier.padding(top = 4.dp, bottom = 10.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Field(typed, { typed = it }, tr("Например: «Сопромат»", "E.g. «Organic chemistry»"), Modifier.weight(1f))
                         Spacer(Modifier.width(8.dp))
@@ -114,7 +114,7 @@ fun Onboarding() {
                 }
                 else -> {
                     Text(tr("Как ставят оценки?", "How are you marked?"), style = T.title, modifier = Modifier.padding(top = 24.dp))
-                    Text(tr("Сорока будет считать средний и подсказывать, сколько осталось до высшей оценки. Шкалу можно сменить в настройках.", "The magpie will keep the average and tell you how far you are from the top mark. You can change it in the settings."), style = T.small, modifier = Modifier.padding(top = 4.dp, bottom = 12.dp))
+                    Spacer(Modifier.height(12.dp))
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         listOf("5", "10", "12", "100", "letter", "pass").forEach { sc -> Chip(scaleName(sc), scale == sc) { scale = sc } } }
                     Box(Modifier.fillMaxWidth().padding(top = 24.dp), contentAlignment = Alignment.Center) { Creature("magpie", Stage.ADULT, Pose.WORK, 150.dp) }

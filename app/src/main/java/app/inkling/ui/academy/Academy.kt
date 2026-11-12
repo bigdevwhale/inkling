@@ -291,8 +291,7 @@ private fun SubjectList(d: Data, nav: Nav) {
             SchoolMark(s.school, 42.dp); Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f)) {
                 Text(s.name, style = T.bodyB, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text("${Schools.of(s.school).title} · ${dur(min * 60)}${if (wk > 0) tr(", на неделе ${dur(wk * 60)}", ", ${dur(wk * 60)} this week") else ""}", style = T.tiny, maxLines = 1)
-                Marks.nudge(d.s.scale, termGs, d.s.passes)?.let { Text(it, style = T.tiny.copy(color = C.acc), maxLines = 1, overflow = TextOverflow.Ellipsis) }
+                Text(dur(min * 60) + if (wk > 0) tr(" · на неделе ${dur(wk * 60)}", " · ${dur(wk * 60)} this week") else "", style = T.tiny, maxLines = 1)
             }
             Marks.term(d.s.scale, termGs, d.s.passes)?.let { Text(if (d.s.scale == "100") fmt1(it) else fmt1(it), style = T.numS.copy(color = subjectColor(s))) }
         }
@@ -305,8 +304,7 @@ private fun SubjectList(d: Data, nav: Nav) {
 fun SubjectsPage(d: Data, nav: Nav) {
     var add by remember { mutableStateOf(false) }
     Page(tr("Предметы", "Subjects"), nav::pop, action = { Box(Modifier.size(40.dp).clip(CircleShape).clickable { add = true }, contentAlignment = Alignment.Center) { Icon(Icons.PLUS, C.ink, 22.dp) } }) {
-        Text(tr("Каждый предмет относится к одной из школ магии – её угадали по названию, но её можно сменить.", "Each subject belongs to a school of magic – guessed from its name, changeable."), style = T.small)
-        SubjectList(d, nav)
+                SubjectList(d, nav)
         val arch = d.subjects.filter { it.archived }
         if (arch.isNotEmpty()) { Section(tr("В архиве", "Archived")); arch.forEach { s -> Row2(s.name, Schools.of(s.school).title) { nav.push(Screen.SubjectInfo(s.id)) } } }
     }
@@ -365,7 +363,7 @@ fun SubjectPage(id: Long, d: Data, nav: Nav) {
     Page(s.name, nav::pop, action = { Box(Modifier.size(40.dp).clip(CircleShape).clickable { edit = true }, contentAlignment = Alignment.Center) { Icon(Icons.EDIT, C.ink, 20.dp) } }) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             SchoolMark(s.school, 52.dp); Spacer(Modifier.width(10.dp))
-            Column(Modifier.weight(1f)) { Text(Schools.of(s.school).title, style = T.h3.copy(color = schoolColor(s.school))); Text(Schools.of(s.school).about, style = T.tiny) }
+            Text(Schools.of(s.school).title, style = T.h3.copy(color = schoolColor(s.school)), modifier = Modifier.weight(1f))
         }
         Row(Modifier.fillMaxWidth().padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Stat1(dur(mine.sumOf { it.minutes } * 60), tr("всего", "in all"), Modifier.weight(1f))
@@ -410,8 +408,9 @@ fun SubjectPage(id: Long, d: Data, nav: Nav) {
         if (exams.isNotEmpty()) { Section(tr("Испытания", "Trials")); exams.forEach { e -> ExamRow(e, d) { nav.push(Screen.ExamInfo(e.id)) } } }
         val slots = d.slots.filter { it.subjectId == id }
         if (slots.isNotEmpty()) { Section(tr("В расписании", "In the timetable"))
-            slots.forEach { sl -> Row2("${weekday(java.time.LocalDate.of(2024, 1, sl.weekday).toEpochDay()).replaceFirstChar { it.uppercase() }} · ${hm(sl.start)}–${hm(sl.end)}",
-                listOfNotNull(Words.slotKind(sl.kind), sl.room.takeIf { it.isNotBlank() }, when (sl.parity) { 1 -> tr("числитель", "odd"); 2 -> tr("знаменатель", "even"); else -> null }).joinToString(" · ")) } }
+            androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                slots.sortedWith(compareBy({ it.weekday }, { it.start })).forEach { sl -> Text("${dayShort(sl.weekday - 1)} ${hm(sl.start)} · ${Words.slotKind(sl.kind)}" + when (sl.parity) { 1 -> tr(" · числ.", " · odd"); 2 -> tr(" · знам.", " · even"); else -> "" },
+                    style = T.smallB, modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(C.card).padding(horizontal = 10.dp, vertical = 6.dp)) } } }
         if (s.teacher.isNotBlank() || s.rules.isNotBlank() || s.contact.isNotBlank()) {
             Section(if (d.s.school) tr("Учитель", "Teacher") else tr("Магистр", "The master"))
             if (s.teacher.isNotBlank()) Text(s.teacher, style = T.bodyB)
@@ -436,8 +435,6 @@ fun TimetablePage(d: Data, nav: Nav) {
     var wd by rememberSaveable { mutableIntStateOf(java.time.LocalDate.ofEpochDay(d.today).dayOfWeek.value) }
     var edit by remember { mutableStateOf<Slot?>(null) }
     Page(tr("Расписание", "Timetable"), nav::pop) {
-        Text(tr("Неделя заводится один раз. Если недели чередуются (числитель и знаменатель), включите это в настройках.",
-            "Set up the week once. If weeks alternate (odd and even), switch that on in the settings."), style = T.small)
         Row(Modifier.fillMaxWidth().padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             (1..7).forEach { i -> val n = d.slots.count { it.weekday == i }
                 Column(Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(if (wd == i) C.acc else C.card).clickable { wd = i }.padding(vertical = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {

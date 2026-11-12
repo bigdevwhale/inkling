@@ -85,8 +85,6 @@ fun ShopPage(d: Data, nav: Nav) {
     val eggPrice = c.eggPrice(d.today)
     Page(tr("Ярмарка академии", "The academy fair"), { nav.pop() }, action = { ManaPill(d.s.mana, Modifier.padding(end = 10.dp)) }) {
         Box(Modifier.fillMaxWidth().card(20.dp)) { TowerScene(d.team, d.s.items - d.s.hidden, Pose.IDLE, preview = preview, sky = Sky.of(d.s), spines = d.finished.map { subjectColor(d.subById[it.subjectId]) }) }
-        Text(tr("Мана даётся за учёбу: свечи, заклинания, объяснения, вопросы, задания. Настоящие деньги здесь не нужны.",
-            "Mana comes from study: candles, spells, explanations, questions, tasks. No real money here."), style = T.small, modifier = Modifier.padding(top = 10.dp))
         Section(tr("Яйцо с ярмарки", "An egg from the fair"))
         val left = Pets.all.count { sp -> !sp.rare && sp.id != "inkling" && d.pets.none { it.species == sp.id } }
         Card {

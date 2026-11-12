@@ -80,10 +80,9 @@ fun AddSheet(d: Data, nav: Nav, onDone: () -> Unit) {
         items.chunked(3).forEach { row ->
             Row(Modifier.fillMaxWidth().padding(bottom = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 row.forEach { (t, f) ->
-                    Column(Modifier.weight(1f).card(16.dp).clickable { f() }.padding(vertical = 10.dp, horizontal = 6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(Modifier.weight(1f).height(92.dp).card(16.dp).clickable { f() }.padding(horizontal = 6.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                         if (t.first == "raven") Mini("raven", 40.dp) else Prop(t.first, 40.dp)
                         Text(t.second, style = T.bodyB, modifier = Modifier.padding(top = 4.dp), maxLines = 1)
-                        Text(t.third, style = T.tiny, textAlign = TextAlign.Center, maxLines = 2, overflow = TextOverflow.Ellipsis)
                     }
                 }
                 repeat(3 - row.size) { Spacer(Modifier.weight(1f)) }
@@ -104,7 +103,7 @@ fun AfterClassSheet(sl: Slot, d: Data, nav: Nav, onDone: () -> Unit) {
     val due = Timetable.nextClass(d.s, d.slots, sl.subjectId, d.today) ?: (d.today + 7)
     Sheet(onDone) {
         Text(sub?.name ?: "", style = T.h2)
-        Text(tr("Гаргулья отметила. Пока свежо – две строчки:", "The gargoyle marked it. While it's fresh – two lines:"), style = T.small, modifier = Modifier.padding(top = 2.dp, bottom = 10.dp))
+        Spacer(Modifier.height(10.dp))
         Text(tr("Что задали?", "What was set?"), style = T.sec, modifier = Modifier.padding(bottom = 6.dp))
         Field(hw, { hw = it }, tr("Например: № 214, 216; параграф 12", "E.g. ex. 214, 216; chapter 12"), single = false)
         Row(Modifier.padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
