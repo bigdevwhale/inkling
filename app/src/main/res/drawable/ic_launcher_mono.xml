@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A quill over an ink pot, for themed icons. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M68,30 C58,34 50,44 47,56 L45,64 L49,63 C52,52 58,43 66,37 C62,44 58,52 56,60 L60,58 C64,50 68,40 70,32 Z" />
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M40,64 L62,64 C64,64 65,65 65,67 L65,70 C68,72 70,75 70,79 C70,84 66,86 61,86 L41,86 C36,86 32,84 32,79 C32,75 34,72 37,70 L37,67 C37,65 38,64 40,64 Z" />
+</vector>
