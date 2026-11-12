@@ -7,6 +7,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.core.os.LocaleListCompat
@@ -43,7 +45,7 @@ class MainActivity : AppCompatActivity() {
                 enableEdgeToEdge(statusBarStyle = if (dark) SystemBarStyle.dark(t) else SystemBarStyle.light(t, t), navigationBarStyle = if (dark) SystemBarStyle.dark(t) else SystemBarStyle.light(t, t))
             }
             InkTheme(dark) {
-                settings?.let { s -> if (s.onboarded) Root(s) else Onboarding() }
+                settings?.let { s -> when { s.onboarded -> Root(s); BuildConfig.DEMO -> androidx.compose.foundation.layout.Box(androidx.compose.ui.Modifier.fillMaxSize().background(app.inkling.ui.theme.C.bg)) {}; else -> Onboarding() } }
             }
         }
     }
