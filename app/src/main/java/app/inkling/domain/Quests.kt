@@ -35,6 +35,9 @@ class WeekFacts(val monday: Long, studies: List<Study>, spells: List<Spell>, que
 
 data class Quest(val id: String, val ru: String, val en: String, val need: Int, val mana: Int, val only: String = "", val progress: (WeekFacts) -> Int) {
     val title get() = tr(ru, en)
+    /** How far it got, for the eye: «2 ч 10 мин из 5 ч» for the hours, «3 из 5» for the rest. */
+    fun shown(f: WeekFacts): String { val p = progress(f).coerceAtMost(need)
+        return if (id == "hours5") tr("${dur(p * 60)} из ${need / 60} ч", "${dur(p * 60)} of ${need / 60} h") else tr("$p из $need", "$p of $need") }
 }
 
 object Quests {
