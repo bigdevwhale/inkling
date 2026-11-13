@@ -208,8 +208,9 @@ class AppContainer(context: Context) {
         id
     }
 
-    suspend fun updateStudy(st: Study) = lock.withLock { dao.update(st) }
-    suspend fun deleteStudy(id: Long) = lock.withLock { dao.deleteStudy(id) }
+    // an edited study (say, 45 minutes made 120) can finish a quest or bring a find too
+    suspend fun updateStudy(st: Study) = lock.withLock { dao.update(st); afterAct() }
+    suspend fun deleteStudy(id: Long) = lock.withLock { dao.deleteStudy(id); afterAct() }
 
     // ---------- materials ----------
 

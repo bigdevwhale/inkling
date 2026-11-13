@@ -34,6 +34,16 @@ import androidx.compose.ui.unit.dp
 import app.inkling.container
 import app.inkling.data.Attend
 import app.inkling.data.Slot
+import java.time.ZoneId
+import java.time.Instant
+import app.inkling.ui.components.Row2
+import app.inkling.ui.components.Dot
+import app.inkling.domain.weekday
+import app.inkling.domain.fmtDay
+import app.inkling.domain.count
+import app.inkling.domain.cap
+import app.inkling.domain.WeekFacts
+import app.inkling.data.Study
 import app.inkling.domain.Feast
 import app.inkling.domain.Quests
 import app.inkling.domain.Timetable
@@ -72,6 +82,7 @@ fun HomeScreen(d: Data, nav: Nav) {
     val s = d.s
     var quests by remember { mutableStateOf(false) }
     var after by remember { mutableStateOf<Slot?>(null) }   // the class just marked «was there»: «what was set?» opens for it
+    var dayOpen by remember { mutableStateOf<Long?>(null) }   // a bar of the week tapped: that day's studies
     val todayMin = d.studies.filter { it.day == d.today }.sumOf { it.minutes }
     val lastDay = d.studies.maxOfOrNull { it.day } ?: d.today
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 18.dp)) {
@@ -142,22 +153,29 @@ fun HomeScreen(d: Data, nav: Nav) {
         }
 
         Text(tr("Эта неделя", "This week") + (d.studies.filter { it.day >= weekStart(d.today) }.sumOf { it.minutes }.takeIf { it > 0 }?.let { " · " + dur(it * 60) } ?: ""), style = T.sec, modifier = Modifier.padding(top = 18.dp, bottom = 8.dp))
-        Week(d)
+        Week(d) { dayOpen = it }
         Spacer(Modifier.height(24.dp))
     }
 
     // the sheets fill the screen, so they live outside the scrolling column (inside it they get an endless height and crash)
     after?.let { sl -> AfterClassSheet(sl, d, nav) { after = null } }
     if (satchel) SatchelSheet(d) { satchel = false }
+    dayOpen?.let { day -> DaySheet(day, d, nav) { dayOpen = null } }
     if (quests) Sheet({ quests = false }) {
         Text(tr("Задания недели", "This week's quests"), style = T.h2)
         Text(tr("Новые – каждый понедельник. За них дают ману.", "New ones every Monday. They bring mana."), style = T.small, modifier = Modifier.padding(top = 4.dp, bottom = 8.dp))
+        val monday = weekStart(d.today)
+        val facts = WeekFacts(monday, d.studies, d.spells, d.questions, d.tasks, d.attends, s) { id -> d.subById[id]?.school.orEmpty() }
+            .also { it.recalled = if (s.recallWeek == monday) s.recalled else 0 }
         s.quests.mapNotNull { Quests.byId[it] }.forEach { q ->
             val done = q.id in s.questsDone
             Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.size(26.dp).clip(CircleShape).background(if (done) C.ok else C.card2), contentAlignment = Alignment.Center) { if (done) Icon(Icons.CHECK, C.accInk, 16.dp) }
                 Spacer(Modifier.width(10.dp))
-                Text(q.title, style = if (done) T.body.copy(color = C.mute) else T.body, modifier = Modifier.weight(1f))
+                Column(Modifier.weight(1f)) {
+                    Text(q.title, style = if (done) T.body.copy(color = C.mute) else T.body)
+                    if (!done && s.questWeek == monday) Text(q.shown(facts), style = T.tiny)
+                }
                 Text("+${q.mana}", style = T.smallB.copy(color = C.mana))
             }
         }
@@ -261,7 +279,7 @@ private fun Door(prop: String, label: String, modifier: Modifier = Modifier, val
 
 /** Monday to Sunday: minutes studied, coloured by the day's main school. */
 @Composable
-private fun Week(d: Data) {
+private fun Week(d: Data, open: (Long) -> Unit) {
     val monday = weekStart(d.today)
     val byDay = d.studies.filter { it.day in monday..(monday + 6) }.groupBy { it.day }
     val max = (byDay.values.maxOfOrNull { l -> l.sumOf { it.minutes } } ?: 60).coerceAtLeast(60)
@@ -269,7 +287,7 @@ private fun Week(d: Data) {
         for (i in 0 until 7) {
             val day = monday + i; val l = byDay[day].orEmpty(); val v = l.sumOf { it.minutes }
             val main = l.groupBy { it.subjectId }.maxByOrNull { e -> e.value.sumOf { it.minutes } }?.key
-            Column(Modifier.weight(1f).alpha(if (day > d.today) .35f else 1f), horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(Modifier.weight(1f).alpha(if (day > d.today) .35f else 1f).clip(RoundedCornerShape(10.dp)).clickable(enabled = day <= d.today) { open(day) }, horizontalAlignment = Alignment.CenterHorizontally) {
                 Box(Modifier.height(52.dp).fillMaxWidth(), contentAlignment = Alignment.BottomCenter) {
                     if (day in d.s.sick) Icon(Icons.CROSS, C.bad, 16.dp)
                     else Box(Modifier.width(14.dp).height((4 + 48f * v / max).dp).clip(RoundedCornerShape(50)).background(if (v == 0) C.track else subjectColor(d.subById[main])))
@@ -280,3 +298,18 @@ private fun Week(d: Data) {
     }
 }
 
+/** One day of the week: what was studied, each study opens for editing. */
+@Composable
+private fun DaySheet(day: Long, d: Data, nav: Nav, close: () -> Unit) = Sheet(close) {
+    val l = d.studies.filter { it.day == day }.sortedBy { it.start }
+    Text("${weekday(day).cap()}, ${fmtDay(day)}", style = T.h2)
+    Text(if (l.isEmpty()) tr("В этот день занятий не было.", "No study on this day.")
+        else "${count(l.size, "занятие", "занятия", "занятий", "study", "studies")} · ${dur(l.sumOf { it.minutes } * 60)}",
+        style = T.small, modifier = Modifier.padding(top = 4.dp, bottom = 8.dp))
+    l.forEach { st ->
+        val kind = when (st.kind) { Study.CANDLE -> tr("свеча", "candle"); Study.TEACH -> tr("объяснение", "explaining"); Study.TICKETS -> tr("билеты", "tickets"); else -> tr("вручную", "by hand") }
+        Row2(d.subById[st.subjectId]?.name ?: tr("Без предмета", "No subject"),
+            listOfNotNull("${hm(Instant.ofEpochMilli(st.start).atZone(ZoneId.systemDefault()).let { it.hour * 60 + it.minute })} · $kind", st.note.lineSequence().firstOrNull()?.takeIf { it.isNotBlank() }).joinToString(" · "),
+            dur(st.minutes * 60), lead = { Dot(subjectColor(d.subById[st.subjectId])) }) { close(); nav.push(Screen.StudyEdit(st.id)) }
+    }
+}
