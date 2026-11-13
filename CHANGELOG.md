@@ -6,7 +6,7 @@ line "<!-- tg", then 2-4 short lines in Russian for users (what is new, what is 
 then close it like any HTML comment. The release notes carry it, and the chat bot posts those lines.
 -->
 
-## [Unreleased]
+## [1.0.2] - 2026-11-13
 
 - Fixed: editing or deleting a study didn't recheck the week's quests and finds, so a study made longer (45 → 120 minutes) didn't finish a quest until the next study (#2).
 - The week's quests show how far each one got: «1 из 2», «2 ч 10 мин из 5 ч».
