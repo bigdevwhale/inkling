@@ -44,9 +44,15 @@ object Backup {
 
     /** Reads a tower from [uri] – a zip or a bare JSON; false when the file isn't one of ours. Nothing changes then. */
     suspend fun read(c: AppContainer, uri: Uri): Boolean {
+        val input = withContext(Dispatchers.IO) { runCatching { c.app.contentResolver.openInputStream(uri) }.getOrNull() } ?: return false
+        return read(c, input)
+    }
+
+    /** Reads a tower from [input] and closes it; the same file, wherever it came from. */
+    suspend fun read(c: AppContainer, input: InputStream): Boolean {
         val fresh = File(c.app.filesDir, "$PHOTOS.new")
         val text = withContext(Dispatchers.IO) {
-            runCatching { c.app.contentResolver.openInputStream(uri)?.use { unpack(it, fresh) } }.getOrNull()
+            runCatching { input.use { unpack(it, fresh) } }.getOrNull()
         }
         val ok = text != null && import(c, text)
         withContext(Dispatchers.IO) {

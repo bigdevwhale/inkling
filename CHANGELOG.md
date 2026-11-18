@@ -6,6 +6,16 @@ line "<!-- tg", then 2-4 short lines in Russian for users (what is new, what is 
 then close it like any HTML comment. The release notes carry it, and the chat bot posts those lines.
 -->
 
+## [1.3.0] - 2026-11-18
+
+### Added
+- **Moving to a new phone through Lingvale:** Lingvale can now gather the backups of all our apps into one file and load them back on another phone. Inkling hands it the same backup file the settings save, with the photos of the board, and takes one back the same way. Only Lingvale signed with our key is answered, loading happens only after you confirm it in Lingvale, and nothing leaves the phone.
+
+<!-- tg
+Переезд на новый телефон через Lingvale: деревня собирает копии всех наших приложений в один файл и возвращает их на новом телефоне.
+Inkling отдаёт туда ту же копию, что сохраняют настройки, вместе с фото с доски.
+-->
+
 ## [1.2.1] - 2026-11-18
 
 - The bottom bar is now a floating shelf with drawn icons – the tower, the book, the paw and the chronicle – and the wand in a gold ring in the middle. A lit patch slides under the chosen place, and its picture grows and comes into colour.
