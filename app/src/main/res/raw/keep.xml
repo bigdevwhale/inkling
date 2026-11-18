@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Pet, egg, prop and burrow pictures are looked up by name at run time; the shrinker must keep them. -->
+<!-- Pet, egg, prop and burrow pictures and the candle's bell are looked up by name at run time; the shrinker must keep them. -->
 <resources xmlns:tools="http://schemas.android.com/tools"
-    tools:keep="@drawable/ic_launcher_fg,@drawable/pet_*,@drawable/egg_*,@drawable/item_*,@drawable/burrow_*,@drawable/prop_*" />
+    tools:keep="@drawable/ic_launcher_fg,@drawable/pet_*,@drawable/egg_*,@drawable/item_*,@drawable/burrow_*,@drawable/prop_*,@raw/chime" />

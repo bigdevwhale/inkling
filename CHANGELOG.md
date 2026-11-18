@@ -6,6 +6,24 @@ line "<!-- tg", then 2-4 short lines in Russian for users (what is new, what is 
 then close it like any HTML comment. The release notes carry it, and the chat bot posts those lines.
 -->
 
+## [1.2.0] - 2026-11-18
+
+### Added
+- **Moving to a new phone (#7):** the backup is now one zip with the whole tower and the photos of the board. «Send a backup» in the settings hands it to a messenger, the mail or a cloud drive, and on the new phone the welcome screen has «I have a backup of my tower» – the tower opens as it was, without the questions. Backups saved by earlier versions (a bare JSON) are still read.
+- **A bell when the candle has burnt down (#5):** it rings on the candle's screen and with the notification when the app is closed. It follows the phone's notification volume, so a silent phone stays silent; it can be turned off in the settings, «Candle and break».
+
+### Changed
+- The home screen's row of quests is titled «This week's quests», with the next quest under it, instead of only a cut-off quest (#4).
+
+### Fixed
+- A broken or foreign backup file could crash the app or leave the tower half-replaced; now it changes nothing.
+
+<!-- tg
+Переезд на новый телефон: в настройках «Копия и новый телефон» → «Отправить копию», а на новом телефоне при первом запуске – «У меня есть копия башни». Фото с доски переезжают тоже.
+Когда свеча догорела, звенит колокольчик. Он слушается громкости уведомлений и выключается в настройках свечи.
+На главном экране у заданий недели появился заголовок.
+-->
+
 ## [1.1.0] - 2026-11-16
 
 ### Added

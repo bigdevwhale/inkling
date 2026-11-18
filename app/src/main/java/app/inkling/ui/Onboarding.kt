@@ -1,5 +1,7 @@
 package app.inkling.ui
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +29,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,6 +38,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.inkling.container
+import app.inkling.data.Backup
 import app.inkling.data.Settings
 import app.inkling.domain.Schools
 import app.inkling.domain.Stage
@@ -51,6 +55,7 @@ import app.inkling.ui.components.schoolColor
 import app.inkling.ui.theme.C
 import app.inkling.ui.theme.T
 import app.inkling.ui.tower.scaleName
+import kotlinx.coroutines.launch
 
 /** First launch: the inkling, where one studies, the subjects (each finds its school of magic) and the scale of marks. */
 @Composable
@@ -63,6 +68,11 @@ fun Onboarding() {
     var scale by remember { mutableStateOf("5") }
     val subjects = remember { mutableStateListOf<String>() }
     var typed by remember { mutableStateOf("") }
+    // moving from another phone: the backup opens the tower as it was, and the questions aren't needed
+    val scope = rememberCoroutineScope()
+    var notOurs by remember { mutableStateOf(false) }
+    val restore = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) scope.launch { notOurs = !Backup.read(c, uri) } }
     Column(Modifier.fillMaxSize().background(C.bg).statusBarsPadding().navigationBarsPadding()) {
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 22.dp)) {
             Row(Modifier.fillMaxWidth().padding(top = 14.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -75,6 +85,13 @@ fun Onboarding() {
                         "This is the Inkling. It grows while you study, and study brings 23 more creatures."),
                         style = T.body.copy(color = C.mute), textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(top = 10.dp))
                     Field(name, { name = it.take(30) }, tr("Как вас записать в журнал академии? (по желанию)", "How shall the academy register you? (optional)"), modifier = Modifier.padding(top = 20.dp))
+                    Text(tr("У меня есть копия башни", "I have a backup of my tower"), style = T.smallB.copy(color = C.acc), textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth().padding(top = 14.dp).clip(RoundedCornerShape(12.dp)).clickable { notOurs = false; runCatching { restore.launch(arrayOf("*/*")) } }.padding(10.dp))
+                    Text(if (notOurs) tr("Это не копия Inkling. Нужен файл inkling-….zip (или .json), сохранённый в настройках на прежнем телефоне.",
+                            "That's not an Inkling backup. It takes the inkling-….zip (or .json) file saved in the settings on the old phone.")
+                        else tr("Переезжаете с другого телефона? На нём: Настройки → Копия и новый телефон → Отправить копию.",
+                            "Moving from another phone? There: Settings → Backup and a new phone → Send a backup."),
+                        style = T.tiny.copy(color = if (notOurs) C.bad else C.mute), textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
                 }
                 1 -> {
                     Text(tr("Где вы учитесь?", "Where do you study?"), style = T.title, modifier = Modifier.padding(top = 24.dp))

@@ -135,7 +135,8 @@ fun HomeScreen(d: Data, nav: Nav) {
             Row(Modifier.padding(top = 10.dp).fillMaxWidth().card(18.dp).clickable { quests = true }.padding(horizontal = 12.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
                 Prop("medal", 32.dp); Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(next?.title ?: tr("Задания недели выполнены", "This week's quests are done"), style = T.bodyB, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(tr("Задания недели", "This week's quests"), style = T.bodyB, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(next?.title ?: tr("Все выполнены", "All done"), style = T.small, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.padding(horizontal = 8.dp)) {
                     qs.forEach { q -> Box(Modifier.size(9.dp).clip(CircleShape).background(if (q.id in s.questsDone) C.ok else C.track)) }

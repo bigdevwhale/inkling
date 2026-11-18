@@ -174,12 +174,11 @@ fun SettingsPage(d: Data, nav: Nav) {
     val scope = rememberCoroutineScope()
     val s = d.s
     fun up(f: (Settings) -> Settings) = c.write { settings.update(f) }
-    val save = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
-        if (uri != null) scope.launch { val text = Backup.export(c); runCatching { ctx.contentResolver.openOutputStream(uri)?.use { it.write(text.toByteArray()) } }
-            c.say(tr("Копия сохранена", "Backup saved")) } }
+    val save = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { uri ->
+        if (uri != null) scope.launch { val ok = runCatching { Backup.write(c, ctx.contentResolver.openOutputStream(uri)!!) }.isSuccess
+            c.say(if (ok) tr("Копия сохранена", "Backup saved") else tr("Не получилось сохранить копию", "Couldn't save the backup")) } }
     val open = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        if (uri != null) scope.launch { val text = runCatching { ctx.contentResolver.openInputStream(uri)?.use { it.readBytes().decodeToString() } }.getOrNull().orEmpty()
-            c.say(if (Backup.import(c, text)) tr("Башня восстановлена", "The tower is restored") else tr("Это не копия Inkling", "That's not an Inkling backup")) } }
+        if (uri != null) scope.launch { c.say(if (Backup.read(c, uri)) tr("Башня восстановлена", "The tower is restored") else tr("Это не копия Inkling", "That's not an Inkling backup")) } }
     Page(tr("Настройки", "Settings"), { nav.pop() }) {
         Fold(Icons.CAP, C.acc, tr("Где учитесь", "Where you study"), "${modeName(s.mode)} · ${Words.year(s)}") {
             Segments(listOf(tr("Школа", "School"), tr("Колледж", "College"), tr("Вуз", "University"), tr("Сам(а)", "Self")),
@@ -207,6 +206,8 @@ fun SettingsPage(d: Data, nav: Nav) {
             Step(tr("${s.focus} мин", "${s.focus} min"), { up { it.copy(focus = (it.focus - 5).coerceAtLeast(5)) } }, { up { it.copy(focus = (it.focus + 5).coerceAtMost(120)) } })
             Text(tr("Перемена после свечи", "The break after a candle"), style = T.small, modifier = Modifier.padding(top = 10.dp))
             Step(tr("${s.rest} мин", "${s.rest} min"), { up { it.copy(rest = (it.rest - 1).coerceAtLeast(1)) } }, { up { it.copy(rest = (it.rest + 1).coerceAtMost(30)) } })
+            Spacer(Modifier.height(6.dp))
+            Toggle(tr("Колокольчик", "The bell"), tr("звенит, когда свеча догорела", "rings when the candle has burnt down"), s.chime) { v -> up { it.copy(chime = v) } }
         }
         if (!s.self) Fold(Icons.BELL, C.acc, if (s.school) tr("Звонки", "Bells") else tr("Пары", "Periods"), tr("${s.bells.size} в день", "${s.bells.size} a day")) {
             s.bells.forEachIndexed { i, b -> val p = b.split('-'); val a = parseHm(p[0]) ?: 0; val z = parseHm(p.getOrElse(1) { "0" }) ?: 0
@@ -268,9 +269,13 @@ fun SettingsPage(d: Data, nav: Nav) {
             Segments(listOf("Русский", "English", tr("Как в системе", "System")), when (lang) { "ru" -> 0; "en" -> 1; else -> 2 }) { i -> setLanguage(listOf("ru", "en", "")[i]) }
             Text(tr("За окном – погода в городе: ${s.town.ifBlank { "не определён" }}", "Out of the window – the weather in: ${s.town.ifBlank { "unknown" }}"), style = T.small, modifier = Modifier.padding(top = 10.dp))
         }
-        Fold(Icons.SAVE, C.ok, tr("Резервная копия", "Backup"), tr("файл со всей башней", "one file with the whole tower")) {
-            Btn(tr("Сохранить копию", "Save a backup"), Modifier.fillMaxWidth(), small = true) { save.launch("inkling-${java.time.LocalDate.now()}.json") }
-            Ghost(tr("Восстановить из файла", "Restore from a file"), Modifier.fillMaxWidth().padding(top = 8.dp), small = true) { open.launch(arrayOf("application/json", "*/*")) }
+        Fold(Icons.SAVE, C.ok, tr("Копия и новый телефон", "Backup and a new phone"), tr("файл со всей башней", "one file with the whole tower")) {
+            Text(tr("В файле – вся башня: существа, мана, занятия, оценки, расписание и фото с доски. Чтобы переехать на новый телефон, отправьте файл себе, а на новом телефоне при первом запуске Inkling нажмите «У меня есть копия башни».",
+                "The file holds the whole tower: the creatures, mana, studies, marks, the timetable and the photos of the board. To move to a new phone, send the file to yourself, and on the new phone tap «I have a backup of my tower» when Inkling first opens."),
+                style = T.small, modifier = Modifier.padding(bottom = 10.dp))
+            Btn(tr("Отправить копию", "Send a backup"), Modifier.fillMaxWidth(), small = true) { scope.launch { if (runCatching { Backup.send(c, ctx) }.isFailure) c.say(tr("Не получилось собрать копию", "Couldn't make the backup")) } }
+            Ghost(tr("Сохранить в файл", "Save to a file"), Modifier.fillMaxWidth().padding(top = 8.dp), small = true) { runCatching { save.launch(Backup.fileName()) } }
+            Ghost(tr("Восстановить из файла", "Restore from a file"), Modifier.fillMaxWidth().padding(top = 8.dp), small = true) { runCatching { open.launch(arrayOf("*/*")) } }
             Text(tr("Восстановление заменит всё, что есть сейчас.", "Restoring replaces everything there is now."), style = T.tiny, modifier = Modifier.padding(top = 6.dp))
         }
         Fold(Icons.HEART, C.bad, tr("Поддержать", "Support"), tr("StillCraft держится на поддержке пользователей", "StillCraft lives on goodwill")) { LinkRow(Icons.HEART, C.bad, tr("Поддержать разработку", "Support development"), null, Community.SUPPORT) }

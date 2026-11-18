@@ -129,7 +129,7 @@ private fun Setup(d: Data, nav: Nav) {
         Spacer(Modifier.height(20.dp))
         Btn(tr("Зажечь свечу", "Light the candle"), Modifier.fillMaxWidth(), enabled = sub != 0L) {
             c.write { light(sub, mat, task, exam, plan) }
-            Notes.candle(ctx, d.subById[sub]?.name.orEmpty(), System.currentTimeMillis() + plan * 60_000L)
+            Notes.candle(ctx, d.subById[sub]?.name.orEmpty(), System.currentTimeMillis() + plan * 60_000L, d.s.chime)
         }
         if (d.active.isEmpty()) Text(tr("Сначала добавьте предмет – на вкладке «Академия».", "Add a subject first – on the «Academy» tab."), style = T.small.copy(color = C.bad), modifier = Modifier.padding(top = 8.dp))
     }
@@ -155,7 +155,10 @@ private fun Burning(d: Data, nav: Nav) {
     val total = cd.plan * 60_000L
     val left = (cd.start + total - now).coerceAtLeast(0)
     var finish by remember { mutableStateOf(false) }
-    LaunchedEffect(left == 0L) { if (left == 0L) finish = true }
+    // burnt down before our eyes: the bell rings here, and the alarm with its note is not needed any more
+    val alight = remember { left > 0 }
+    LaunchedEffect(left == 0L) { if (left == 0L) { finish = true
+        if (alight && System.currentTimeMillis() < cd.start + total + 3000) { if (d.s.chime) Notes.ring(ctx); Notes.stopCandle(ctx) } } }
     val down = cd.downSince > 0
     // keep the screen on while it burns
     val view = LocalView.current

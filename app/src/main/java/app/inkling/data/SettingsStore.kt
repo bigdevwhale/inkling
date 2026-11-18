@@ -56,6 +56,7 @@ data class Settings(
     val questsDone: Set<String> = emptySet(),
     val focus: Int = 25,                         // a candle's minutes
     val rest: Int = 5,                           // a break's minutes
+    val chime: Boolean = true,                   // a bell when the candle has burnt down
     val afterClass: Boolean = true,              // ask «were you there? what was set?» after each class
     val evening: Int = 20,                       // hour of the evening reminder (satchel, spells), -1 off
     val satchel: Boolean = true,                 // the evening satchel for tomorrow (school)
@@ -81,7 +82,7 @@ data class Settings(
         put("bells", JSONArray(bells)); put("parityStart", parityStart); put("terms", JSONArray(terms)); put("mana", mana)
         put("items", JSONArray(items.toList())); put("hidden", JSONArray(hidden.toList())); put("theme", theme); put("inbox", JSONArray(inbox))
         put("seen", JSONArray(seen.toList())); put("questWeek", questWeek); put("quests", JSONArray(quests)); put("questsDone", JSONArray(questsDone.toList()))
-        put("focus", focus); put("rest", rest); put("afterClass", afterClass); put("evening", evening); put("satchel", satchel)
+        put("focus", focus); put("rest", rest); put("chime", chime); put("afterClass", afterClass); put("evening", evening); put("satchel", satchel)
         put("packed", JSONArray(packed.toList())); put("sick", JSONArray(sick.toList())); put("digested", digested); put("manaDay", manaDay); put("manaToday", manaToday)
         put("candle", candle.json())
         put("town", town); if (!lat.isNaN()) { put("lat", lat); put("lon", lon) }; put("guessed", guessed); put("outside", outside)
@@ -101,7 +102,7 @@ data class Settings(
                 bells = list("bells"), parityStart = j.optLong("parityStart"), terms = list("terms"), mana = j.optInt("mana"),
                 items = set("items"), hidden = set("hidden"), theme = j.optString("theme", "system"), inbox = list("inbox"), seen = set("seen"),
                 questWeek = j.optLong("questWeek"), quests = list("quests"), questsDone = set("questsDone"),
-                focus = j.optInt("focus", 25), rest = j.optInt("rest", 5), afterClass = j.optBoolean("afterClass", true), evening = j.optInt("evening", 20),
+                focus = j.optInt("focus", 25), rest = j.optInt("rest", 5), chime = j.optBoolean("chime", true), afterClass = j.optBoolean("afterClass", true), evening = j.optInt("evening", 20),
                 satchel = j.optBoolean("satchel", true), packed = days("packed"), sick = days("sick"), digested = j.optLong("digested"),
                 manaDay = j.optLong("manaDay"), manaToday = j.optInt("manaToday"), candle = Candle.of(j.optJSONObject("candle")),
                 town = j.optString("town"), lat = j.optDouble("lat", Double.NaN), lon = j.optDouble("lon", Double.NaN), guessed = j.optBoolean("guessed"),
