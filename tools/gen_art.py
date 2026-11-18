@@ -136,6 +136,18 @@ Image: a wide banner scene for a cozy study app: a quiet scriptorium archive in 
 """ + STYLE + """ Wide panorama, aspect ratio 3:1.
 In the middle a huge open chronicle book on a carved wooden lectern, glowing softly; tall shelves of scrolls and bound volumes on both sides, a brass astrolabe, candles, hanging star charts, a round window with night sky.
 No people, no creatures, no letters or text anywhere (pages show only faint scribbles and small drawings).""",
+    "dock": """Use your image generation tool to create ONE image. Do nothing else (no file copying).
+
+Image: a sprite sheet of 6 icons for the bottom navigation bar of a cozy study app set in an academy of magic. Each icon is one chunky, simple object with a bold readable silhouette, drawn large so it still reads when shown very small (about 30 pixels), front view.
+""" + OBJ_STYLE + """ Few big shapes, strong contrast, a bright warm highlight on each; no tiny details.
+Layout: 3 columns x 2 rows of equal square cells on a flat solid pure magenta (#FF00FF) background. One icon per cell, centered, filling about 80% of the cell, with clear margin; no text, no grid lines, no shadows on the background, no frames or badges behind the icons.
+Icons in order (left to right, top to bottom):
+1 a round stone wizard tower with a pointed indigo roof, a small flag and one warm glowing window,
+2 a thick open spellbook with a red ribbon bookmark and a golden glow rising from its pages,
+3 a wooden magic wand held diagonally with a big golden four-point star sparkle at its tip,
+4 a round golden-brown paw print amulet: a big paw print (one pad, four toes) embossed on a round medallion,
+5 a rolled parchment chronicle scroll, partly unrolled, with a white quill feather lying across it,
+6 a brass hourglass with glowing golden sand.""",
 }
 
 

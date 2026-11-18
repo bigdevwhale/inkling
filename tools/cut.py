@@ -1,14 +1,17 @@
 """Cuts the Codex sheets in art/sheets into app drawables.
 
-    python tools/cut.py
+    python tools/cut.py          # everything
+    python tools/cut.py dock     # only the dock's icons
 
 Creatures (3×2): pet_<id>_<0..5>.webp – baby, teen, adult, signature move, cheer, asleep.
 Items (4×4): item_<id>.webp. Props (4×4): prop_<id>.webp. Eggs (6×4): egg_<species>.webp.
+Dock (3×2): dock_<id>.webp – the icons of the bottom bar (the sixth cell is a spare and is not cut).
 Tower: tower_bg.webp with the magenta window glass made see-through (the sky is painted behind it).
 
 The art is full of purples, so the magenta is not keyed by colour alone: only magenta-ish pixels joined to the
 cell's border are taken out (a flood fill), then the remaining pink fringe along the cut is softened.
 """
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -25,6 +28,7 @@ ITEMS = ["desk", "shelf", "cauldron", "telescope", "alchemy", "crystal", "armill
          "perch", "banner", "grimoires", "skull", "aquarium", "harp", "hourglass", "painting"]
 PROPS = ["candle", "stub", "mana", "manas", "quill", "book", "scroll", "satchel",
          "letter", "star", "orb", "egg", "wand", "bell", "books", "medal"]
+DOCK = ["tower", "academy", "wand", "pets", "chronicle"]
 MAX = 320
 
 
@@ -111,6 +115,13 @@ def save(im, name):
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
+    if (SHEETS / "dock.png").exists():
+        for name, fr in zip(DOCK, frames(SHEETS / "dock.png", 3, 2)):
+            fr.thumbnail((192, 192), Image.LANCZOS)   # they are shown small
+            save(fr, f"dock_{name}")
+        print("dock")
+    if sys.argv[1:] == ["dock"]:
+        return
     for p in PETS:
         f = SHEETS / f"{p}.png"
         if not f.exists():

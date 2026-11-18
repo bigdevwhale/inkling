@@ -6,6 +6,14 @@ line "<!-- tg", then 2-4 short lines in Russian for users (what is new, what is 
 then close it like any HTML comment. The release notes carry it, and the chat bot posts those lines.
 -->
 
+## [1.2.1] - 2026-11-18
+
+- The bottom bar is now a floating shelf with drawn icons – the tower, the book, the paw and the chronicle – and the wand in a gold ring in the middle. A lit patch slides under the chosen place, and its picture grows and comes into colour.
+
+<!-- tg
+Новое нижнее меню: нарисованные иконки – башня, книга, лапа и свиток летописи, а посередине палочка в золотом кольце.
+-->
+
 ## [1.2.0] - 2026-11-18
 
 ### Added

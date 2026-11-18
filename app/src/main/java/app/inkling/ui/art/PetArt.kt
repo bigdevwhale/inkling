@@ -55,6 +55,7 @@ object Art {
     fun egg(ctx: Context, species: String) = get(ctx, "egg_$species")
     fun item(ctx: Context, id: String) = get(ctx, "item_$id")
     fun prop(ctx: Context, id: String) = get(ctx, "prop_$id")
+    fun dock(ctx: Context, id: String) = get(ctx, "dock_$id")
 }
 
 /** What a pet is doing. */
@@ -173,6 +174,21 @@ fun Mini(species: String, size: Dp, modifier: Modifier = Modifier, egg: Boolean 
         drawImage(img, IntOffset.Zero, IntSize(img.width, img.height), IntOffset(((w - dw) / 2).roundToInt(), ((h - dh) / 2).roundToInt()), IntSize(dw.roundToInt(), dh.roundToInt()),
             filterQuality = FilterQuality.Medium, colorFilter = if (dim) ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) }) else null, alpha = if (dim) .35f else 1f)
     }
+}
+
+/** An icon of the bottom bar, fitted into [size]; [vivid] 1 is its full colour, 0 – faded towards grey, for the places not chosen. False when the art is missing. */
+@Composable
+fun DockArt(id: String, size: Dp, modifier: Modifier = Modifier, vivid: Float = 1f): Boolean {
+    val img = Art.dock(LocalContext.current, id) ?: return false
+    Canvas(modifier.size(size)) {
+        val w = this.size.width; val h = this.size.height
+        val box = minOf(w / img.width, h / img.height)
+        val dw = img.width * box; val dh = img.height * box
+        drawImage(img, IntOffset.Zero, IntSize(img.width, img.height), IntOffset(((w - dw) / 2).roundToInt(), ((h - dh) / 2).roundToInt()), IntSize(dw.roundToInt(), dh.roundToInt()),
+            alpha = .78f + .22f * vivid, colorFilter = if (vivid >= 1f) null else androidx.compose.ui.graphics.ColorFilter.colorMatrix(androidx.compose.ui.graphics.ColorMatrix().apply { setToSaturation(.5f + .5f * vivid) }),
+            filterQuality = FilterQuality.Medium)
+    }
+    return true
 }
 
 /** A prop from the props sheet (acorn, jar, boulder…), fitted into [size]. */

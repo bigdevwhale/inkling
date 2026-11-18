@@ -1,20 +1,30 @@
 package app.inkling.ui
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -30,7 +40,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import app.inkling.BuildConfig
@@ -51,6 +65,7 @@ import app.inkling.data.Ticket
 import app.inkling.domain.Engine
 import app.inkling.domain.today
 import app.inkling.domain.tr
+import app.inkling.ui.art.DockArt
 import app.inkling.ui.academy.AcademyScreen
 import app.inkling.ui.academy.ExamPage
 import app.inkling.ui.academy.GradesPage
@@ -223,21 +238,43 @@ fun Root(s: Settings) {
     }
 }
 
+/**
+ * The dock: a shelf floating over the page with four drawn things – the tower, the book, the paw and the chronicle –
+ * and the wand in a gold ring in the middle. A lit patch slides under the place chosen, whose picture grows and comes into colour.
+ */
 @Composable
 private fun Dock(s: Settings, sel: Int, onSel: (Int) -> Unit, onAdd: () -> Unit) {
-    val tabs = listOf(tr("Башня", "Tower") to Icons.TOWER, (if (s.self) tr("Учёба", "Study") else tr("Академия", "Academy")) to Icons.BOOK,
-        tr("Существа", "Creatures") to Icons.PAW, tr("Летопись", "Chronicle") to Icons.STATS)
-    Row(Modifier.fillMaxWidth().shadow(12.dp, ambientColor = C.shadow, spotColor = C.shadow).background(C.nav).navigationBarsPadding().padding(top = 6.dp, bottom = 6.dp),
-        verticalAlignment = Alignment.CenterVertically) {
-        tabs.forEachIndexed { i, (label, ic) ->
-            if (i == 2) Box(Modifier.weight(1.1f), contentAlignment = Alignment.Center) {
-                Box(Modifier.size(56.dp).clip(CircleShape).background(C.acc).clickable(onClick = onAdd), contentAlignment = Alignment.Center) { Icon(Icons.WAND, C.accInk, 28.dp) }
+    val tabs = listOf(Triple(tr("Башня", "Tower"), "tower", Icons.TOWER), Triple(if (s.self) tr("Учёба", "Study") else tr("Академия", "Academy"), "academy", Icons.BOOK),
+        Triple(tr("Существа", "Creatures"), "pets", Icons.PAW), Triple(tr("Летопись", "Chronicle"), "chronicle", Icons.STATS))
+    val still = BuildConfig.SHOTS
+    val shelf = RoundedCornerShape(26.dp)
+    Box(Modifier.fillMaxWidth().navigationBarsPadding().padding(start = 12.dp, end = 12.dp, top = 18.dp, bottom = 8.dp)) {
+        BoxWithConstraints(Modifier.fillMaxWidth().height(64.dp).shadow(14.dp, shelf, ambientColor = C.shadow, spotColor = C.shadow).clip(shelf).background(C.nav).border(1.dp, C.line, shelf)) {
+            // four places of 1 and the gap of 1.1 for the wand between the second and the third
+            val unit = maxWidth / 5.1f
+            val x by animateDpAsState(unit * (sel + if (sel >= 2) 1.1f else 0f), if (still) spring(stiffness = Spring.StiffnessHigh) else spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow), label = "lit")
+            Box(Modifier.offset(x = x).width(unit).height(64.dp).padding(horizontal = 5.dp, vertical = 6.dp).clip(RoundedCornerShape(19.dp)).background(Brush.verticalGradient(listOf(C.accSoft, C.accSoft.copy(alpha = .35f)))))
+            Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
+                tabs.forEachIndexed { i, (label, art, ic) ->
+                    if (i == 2) Box(Modifier.weight(1.1f))
+                    val on by animateFloatAsState(if (i == sel) 1f else 0f, if (still) spring(stiffness = Spring.StiffnessHigh) else spring(Spring.DampingRatioMediumBouncy, Spring.StiffnessMediumLow), label = "on")
+                    val col = lerp(C.mute, C.acc, on.coerceIn(0f, 1f))
+                    Column(Modifier.weight(1f).clickable(remember { MutableInteractionSource() }, null) { onSel(i) }, horizontalAlignment = Alignment.CenterHorizontally) {
+                        Box(Modifier.size(32.dp).offset(y = (-2).dp * on).scale(.86f + .22f * on), contentAlignment = Alignment.Center) {
+                            if (!DockArt(art, 32.dp, vivid = on.coerceIn(0f, 1f))) Icon(ic, col, 24.dp) }
+                        Text(label, style = T.tiny.copy(color = col, fontWeight = if (i == sel) androidx.compose.ui.text.font.FontWeight.ExtraBold else T.tiny.fontWeight), maxLines = 1)
+                    }
+                }
             }
-            val col = if (i == sel) C.acc else C.mute
-            Column(Modifier.weight(1f).clickable(remember { MutableInteractionSource() }, null) { onSel(i) }, horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(ic, col, 24.dp)
-                Text(label, style = T.tiny.copy(color = col), modifier = Modifier.padding(top = 2.dp))
-            }
+        }
+        // the wand: everything that can be added; it stands out of the shelf
+        val src = remember { MutableInteractionSource() }
+        val pressed by src.collectIsPressedAsState()
+        val push by animateFloatAsState(if (pressed) .9f else 1f, spring(Spring.DampingRatioMediumBouncy), label = "push")
+        Box(Modifier.align(Alignment.TopCenter).offset(y = (-16).dp).scale(push).size(64.dp).shadow(10.dp, CircleShape, ambientColor = C.acc, spotColor = C.acc)
+            .clip(CircleShape).background(Brush.verticalGradient(listOf(Color(0xFFF3CF7A), Color(0xFFB9811E)))).padding(3.dp)
+            .clip(CircleShape).background(Brush.verticalGradient(listOf(Color(0xFF6A5BD0), Color(0xFF2E2470)))).clickable(src, null, onClick = onAdd), contentAlignment = Alignment.Center) {
+            if (!DockArt("wand", 40.dp)) Icon(Icons.WAND, Color.White, 28.dp)
         }
     }
 }
