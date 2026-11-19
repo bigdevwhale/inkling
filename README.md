@@ -3,7 +3,7 @@
 <h1 align="center">Inkling</h1>
 
 <p align="center">Study in an academy of magic, with creatures that learn alongside you.<br>
-<a href="https://bigdevwhale.github.io/stillcraft/apps/inkling/">Website</a> · <a href="https://github.com/bigdevwhale/inkling/releases/latest/download/Inkling.apk">Download APK</a> · <a href="README.ru.md">Русский</a></p>
+<a href="https://bigdevwhale.github.io/stillcraft/apps/inkling/">Website</a> · <a href="https://play.google.com/store/apps/details?id=app.inkling">Google Play</a> · <a href="https://github.com/bigdevwhale/inkling/releases/latest/download/Inkling.apk">Download APK</a> · <a href="README.ru.md">Русский</a></p>
 
 You are a student of an old academy of magic, and your room is at the top of a tower. Every real subject belongs to one of its schools: calculus to Numerology, programming to Artificing, languages to Runes, anatomy to Healing. While you study, the creatures in your tower feed on knowledge, and at night they grow – as memory does in sleep. It works at school, at college, at university and for studying on your own.
 
@@ -31,7 +31,7 @@ You are a student of an old academy of magic, and your room is at the top of a t
 
 ## Install
 
-Download [Inkling.apk](https://github.com/bigdevwhale/inkling/releases/latest/download/Inkling.apk) on a phone with Android 9 or later, open it and allow installs from that source when Android asks.
+Get it on **[Google Play](https://play.google.com/store/apps/details?id=app.inkling)**, or download [Inkling.apk](https://github.com/bigdevwhale/inkling/releases/latest/download/Inkling.apk) on a phone with Android 9 or later, open it and allow installs from that source when Android asks.
 
 ## Privacy
 

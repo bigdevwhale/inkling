@@ -3,7 +3,7 @@
 <h1 align="center">Inkling</h1>
 
 <p align="center">Учёба в академии магии вместе с волшебными существами.<br>
-<a href="https://bigdevwhale.github.io/stillcraft/apps/inkling/">Сайт</a> · <a href="https://github.com/bigdevwhale/inkling/releases/latest/download/Inkling.apk">Скачать APK</a> · <a href="README.md">English</a></p>
+<a href="https://bigdevwhale.github.io/stillcraft/apps/inkling/">Сайт</a> · <a href="https://play.google.com/store/apps/details?id=app.inkling">Google Play</a> · <a href="https://github.com/bigdevwhale/inkling/releases/latest/download/Inkling.apk">Скачать APK</a> · <a href="README.md">English</a></p>
 
 Вы поступили в старую академию магии и живёте в комнате на вершине башни. Каждый ваш предмет относится к одной из школ магии: матанализ – к Нумерологии, программирование – к Артефакторике, языки – к Рунам, анатомия – к Целительству. Пока вы занимаетесь, существа в башне набираются знаний, а ночью растут. Приложение подходит для школы, колледжа, вуза и для самостоятельной учёбы.
 
@@ -31,7 +31,7 @@
 
 ## Установка
 
-Скачайте [Inkling.apk](https://github.com/bigdevwhale/inkling/releases/latest/download/Inkling.apk) на телефон с Android 9 или новее, откройте файл и разрешите установку из этого источника.
+Поставьте из **[Google Play](https://play.google.com/store/apps/details?id=app.inkling)** или скачайте [Inkling.apk](https://github.com/bigdevwhale/inkling/releases/latest/download/Inkling.apk) на телефон с Android 9 или новее, откройте файл и разрешите установку из этого источника.
 
 ## Приватность
 
